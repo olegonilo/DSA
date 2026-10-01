@@ -1,0 +1,296 @@
+id,pdf_page,nb_page,chapter_no,chapter,category,severity,verdict
+P1-01,4,3,01,Вступ і класифікація СД,terminology,ERROR,CONFIRMED
+P1-02,4,3,01,Вступ і класифікація СД,terminology,IMPRECISE,CONFIRMED
+P1-03,4,3,01,Вступ і класифікація СД,factual,IMPRECISE,CONFIRMED
+P1-04,5,4,01,Вступ і класифікація СД,factual,IMPRECISE,CONFIRMED
+P1-05,5,4,01,Вступ і класифікація СД,factual,IMPRECISE,CWC
+P1-06,5,4,01,Вступ і класифікація СД,terminology,ERROR,CONFIRMED
+P1-07,6,5,01,Вступ і класифікація СД,inconsistency,ERROR,CONFIRMED
+P1-08,6,5,01,Вступ і класифікація СД,terminology,IMPRECISE,CONFIRMED
+P1-09,7,6,01,Вступ і класифікація СД,typo-meaningful,ERROR,CONFIRMED
+P1-10,7,6,01,Вступ і класифікація СД,factual,IMPRECISE,CONFIRMED
+P1-N1,7,6,01,Вступ і класифікація СД,typo-meaningful (NEW),ERROR,NEW
+P1-11,8,7,01,Вступ і класифікація СД,factual,IMPRECISE,CONFIRMED
+P1-12,9,8,01,Вступ і класифікація СД,factual,ERROR,CONFIRMED
+P1-13,9,8,01,Вступ і класифікація СД,factual,IMPRECISE,CONFIRMED
+P1-14,10,9,01,Вступ і класифікація СД,terminology,IMPRECISE,CONFIRMED
+P1-15,10,9,02,Алгоритми та асимптотичний аналіз,inconsistency,IMPRECISE,CONFIRMED
+P1-16,11,10,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-17,11,10,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-18,11,10,02,Алгоритми та асимптотичний аналіз,inconsistency,IMPRECISE,CONFIRMED
+P1-19,12,11,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-20,12,11,02,Алгоритми та асимптотичний аналіз,terminology,IMPRECISE,CONFIRMED
+P1-21,12,11,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-22,13,12,02,Алгоритми та асимптотичний аналіз,terminology,IMPRECISE,CONFIRMED
+P1-23,14,13,02,Алгоритми та асимптотичний аналіз,inconsistency,IMPRECISE,CONFIRMED
+P1-24,14,13,02,Алгоритми та асимптотичний аналіз,complexity,IMPRECISE,CONFIRMED
+P1-N2,14,13,02,Алгоритми та асимптотичний аналіз,terminology (NEW),IMPRECISE,NEW
+P1-25,15,14,02,Алгоритми та асимптотичний аналіз,factual,IMPRECISE,CONFIRMED
+P1-26,16,15,02,Алгоритми та асимптотичний аналіз,factual,IMPRECISE,CONFIRMED
+P1-27,16,15,02,Алгоритми та асимптотичний аналіз,factual/diagram,IMPRECISE,CONFIRMED
+P1-N3,16,15,02,Алгоритми та асимптотичний аналіз,factual (NEW),IMPRECISE,NEW
+P1-28,17,16,02,Алгоритми та асимптотичний аналіз,factual,IMPRECISE,CONFIRMED
+P1-29,17,16,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-30,17,16,02,Алгоритми та асимптотичний аналіз,inconsistency/diagram,ERROR,CONFIRMED
+P1-31,17,16,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-32,17,16,02,Алгоритми та асимптотичний аналіз,factual,IMPRECISE,CONFIRMED
+P1-33,18,17,02,Алгоритми та асимптотичний аналіз,terminology,IMPRECISE,CWC
+P1-34,18,17,02,Алгоритми та асимптотичний аналіз,factual,ERROR,CONFIRMED
+P1-35,18,17,02,Алгоритми та асимптотичний аналіз,factual,IMPRECISE,CONFIRMED
+P2-01,19,18,03,Вказівники,factual,IMPRECISE,CONFIRMED
+P2-02,19,18,03,Вказівники,diagram,IMPRECISE,CONFIRMED
+P2-N1,19,18,03,Вказівники,terminology (NEW),IMPRECISE,NEW
+P2-N2,19,18,03,Вказівники,diagram (NEW),IMPRECISE,NEW
+P2-03,20,19,03,Вказівники,UB,ERROR,CONFIRMED
+P2-04,20,19,03,Вказівники,UB,ERROR,CONFIRMED
+P2-05,20,19,03,Вказівники,compile-error,ERROR,CONFIRMED
+P2-06,20,19,03,Вказівники,inconsistency,ERROR,CWC
+P2-07,21,20,03,Вказівники,UB,IMPRECISE,CWC
+P2-08,22,21,04,Структури,non-standard,ERROR,CONFIRMED
+P2-09,22,21,04,Структури,non-standard,ERROR,CONFIRMED
+P2-10,22,21,04,Структури,overflow,ERROR,CONFIRMED
+P2-11,23,22,04,Структури,compile-error + bug,ERROR,CONFIRMED
+P2-12,23,22,04,Структури,code-bug,IMPRECISE,CONFIRMED
+P2-13,23,22,04,Структури,code-bug,IMPRECISE,CONFIRMED
+P2-14,24,23,05,Масиви,compile-error,ERROR,CONFIRMED
+P2-15,24,23,05,Масиви,compile-error,ERROR,CONFIRMED
+P2-16,24,23,05,Масиви,code-bug,ERROR,CONFIRMED
+P2-17,24,23,05,Масиви,compile-error,ERROR,CONFIRMED
+P2-18,24,23,05,Масиви,compile-error,ERROR,CONFIRMED
+P2-19,24,23,05,Масиви,UB,ERROR,CONFIRMED
+P2-N3,24,23,05,Масиви,compile-error if taken as code (NEW),IMPRECISE,NEW
+P2-20,25,24,05,Масиви,compile-error + bug,ERROR,CONFIRMED
+P2-21,25,24,05,Масиви,complexity,IMPRECISE,CONFIRMED
+P2-22,25,24,05,Масиви,complexity,IMPRECISE,CONFIRMED
+P2-23,25,24,05,Масиви,terminology,IMPRECISE,CONFIRMED
+P2-24,26,25,05,Масиви,formula,ERROR,CONFIRMED
+P2-25,27,26,05,Масиви,factual,IMPRECISE,CONFIRMED
+P2-26,27,26,05,Масиви,code-bug,IMPRECISE,CONFIRMED
+P2-27,27,26,05,Масиви,(alignment),IMPRECISE,REJECTED
+P2-28,28,27,05,Масиви,diagram/typo,IMPRECISE,REJECTED
+P2-29,29,28,05,Масиви,style,IMPRECISE,CONFIRMED
+P2-30,29,28,05,Масиви,factual,IMPRECISE,CONFIRMED
+P2-31,30,29,05,Масиви,inconsistency,IMPRECISE,CONFIRMED
+P2-32,30,29,05,Масиви,typo,IMPRECISE,CWC
+P2-33,31,30,05,Масиви,factual,IMPRECISE,CONFIRMED
+P2-34,31,30,05,Масиви,factual,IMPRECISE,CONFIRMED
+P2-35,32,31,06,Зв'язні списки,compile-error,ERROR,CONFIRMED
+P2-36,32,31,06,Зв'язні списки,terminology,IMPRECISE,CONFIRMED
+P2-37,33,32,06,Зв'язні списки,factual,IMPRECISE,CWC
+P2-38,34,33,06,Зв'язні списки,factual,IMPRECISE,CONFIRMED
+P2-39,35,34,06,Зв'язні списки,complexity,IMPRECISE,CONFIRMED
+P2-40,35,34,06,Зв'язні списки,code-bug/UB + compile-error,ERROR,CONFIRMED
+P2-41,35,34,06,Зв'язні списки,code-bug,IMPRECISE,CWC
+P2-42,36,35,06,Зв'язні списки,factual,ERROR,CONFIRMED
+P2-43,36,35,06,Зв'язні списки,factual,IMPRECISE,CONFIRMED
+P2-44,36,35,06,Зв'язні списки,terminology,IMPRECISE,CONFIRMED
+P3-01,37,36,06,Зв'язні списки,terminology,IMPRECISE,CONFIRMED
+P3-02,37,36,07,Skip list,factual,IMPRECISE,CONFIRMED
+P3-03,37,36,07,Skip list,factual,IMPRECISE,CWC
+P3-04,38,37,07,Skip list,complexity,IMPRECISE,CONFIRMED
+P3-05,38,37,07,Skip list,inconsistency,ERROR,CONFIRMED
+P3-06,38,37,07,Skip list,code (bounds),IMPRECISE,CWC
+P3-07,38,37,07,Skip list,code-bug,ERROR,CONFIRMED
+P3-08,39,38,07,Skip list,code-bug,IMPRECISE,CWC
+P3-09,39,38,07,Skip list,typo-meaningful,ERROR,CONFIRMED
+P3-10,39,38,07,Skip list,code-bug,IMPRECISE,CWC
+P3-11,39,38,07,Skip list,code-bug,ERROR,CONFIRMED
+P3-12,39,38,07,Skip list,typo,IMPRECISE,CONFIRMED
+P3-13,39,38,07,Skip list,code-bug,IMPRECISE,CONFIRMED
+P3-14,39,38,07,Skip list,code-bug,ERROR,CONFIRMED
+P3-15,39,38,07,Skip list,inconsistency,IMPRECISE,CWC
+P3-NEW-2,39,38,07,Skip list,inconsistency,IMPRECISE,NEW
+P3-16,40,39,07,Skip list,code-bug,ERROR,CONFIRMED
+P3-17,40,39,07,Skip list,typo-meaningful,ERROR,CONFIRMED
+P3-NEW-1,40,39,07,Skip list,diagram,IMPRECISE,NEW
+P3-18,42,41,08,Стек,factual,IMPRECISE,CONFIRMED
+P3-19,42,41,08,Стек,terminology,ERROR,CONFIRMED
+P3-20,43,42,08,Стек,diagram,IMPRECISE,CONFIRMED
+P3-21,43,42,08,Стек,terminology,IMPRECISE,CONFIRMED
+P3-22,43,42,08,Стек,diagram,ERROR,CWC
+P3-23,44,43,08,Стек,factual,IMPRECISE,CONFIRMED
+P3-24,44,43,08,Стек,code-bug,ERROR,CONFIRMED
+P3-25,44,43,08,Стек,code-bug,ERROR,CONFIRMED
+P3-26,45,44,09,Черга,terminology,IMPRECISE,CONFIRMED
+P3-27,46,45,09,Черга,diagram,ERROR,CONFIRMED
+P3-28,46,45,09,Черга,factual,IMPRECISE,CONFIRMED
+P3-29,47,46,09,Черга,factual,IMPRECISE,CONFIRMED
+P3-30,47,46,09,Черга,factual,IMPRECISE,REJECTED
+P3-31,48,47,09,Черга,factual,ERROR,CONFIRMED
+P3-32,48,47,09,Черга,typo-meaningful,ERROR,CONFIRMED
+P3-33,50,49,10,Дерева,terminology,ERROR,CONFIRMED
+P3-34,50,49,10,Дерева,terminology,IMPRECISE,CONFIRMED
+P3-35,50,49,10,Дерева,diagram/factual,ERROR,CONFIRMED
+P3-36,50,49,10,Дерева,terminology,ERROR,CONFIRMED
+P3-37,50,49,10,Дерева,factual,IMPRECISE,CWC
+P3-38,51,50,10,Дерева,compile-error,ERROR,CWC
+P3-39,51,50,10,Дерева,factual,IMPRECISE,CONFIRMED
+P3-40,51,50,10,Дерева,diagram,IMPRECISE,CONFIRMED
+P3-41,52,51,10,Дерева,terminology,IMPRECISE,CONFIRMED
+P3-42,52,51,10,Дерева,factual,IMPRECISE,CONFIRMED
+P3-43,52,51,10,Дерева,factual,IMPRECISE,CWC
+P3-44,53,52,10,Дерева,complexity,IMPRECISE,CONFIRMED
+P3-45,54,53,10,Дерева,typo-meaningful,ERROR,CONFIRMED
+P3-46,54,53,10,Дерева,inconsistency,ERROR,CONFIRMED
+P3-47,54,53,10,Дерева,inconsistency,ERROR,CONFIRMED
+P3-48,54,53,10,Дерева,complexity,IMPRECISE,CONFIRMED
+P3-49,54,53,10,Дерева,terminology,IMPRECISE,CONFIRMED
+P4-01,55,54,10,Дерева,complexity,IMPRECISE,CONFIRMED
+P4-02,55,54,10,Дерева,factual/inconsistency,ERROR,CONFIRMED
+P4-03,55,54,10,Дерева,terminology,IMPRECISE,CONFIRMED
+P4-04,55,54,10,Дерева,factual,IMPRECISE,CONFIRMED
+P4-05,56,55,10,Дерева,compile-error,ERROR,CONFIRMED
+P4-06,56,55,10,Дерева,factual,IMPRECISE,CONFIRMED
+P4-07,56,55,11,Типи дерев: BST/AVL/B/B+,factual (incomplete),ERROR,CONFIRMED
+P4-08,57,56,11,Типи дерев: BST/AVL/B/B+,factual,IMPRECISE,CONFIRMED
+P4-NEW-1,59,58,11,Типи дерев: BST/AVL/B/B+,diagram/arithmetic,IMPRECISE,NEW
+P4-09,60,59,11,Типи дерев: BST/AVL/B/B+,complexity,IMPRECISE,CONFIRMED
+P4-10,61,60,11,Типи дерев: BST/AVL/B/B+,terminology,IMPRECISE,CONFIRMED
+P4-11,61,60,11,Типи дерев: BST/AVL/B/B+,factual,IMPRECISE,CONFIRMED
+P4-12,61,60,11,Типи дерев: BST/AVL/B/B+,factual,ERROR,CONFIRMED
+P4-13,62,61,11,Типи дерев: BST/AVL/B/B+,diagram/inconsistency,ERROR,CONFIRMED
+P4-14,62,61,11,Типи дерев: BST/AVL/B/B+,terminology,IMPRECISE,CWC
+P4-15,62,61,11,Типи дерев: BST/AVL/B/B+,complexity,IMPRECISE,REJECTED
+P4-16,62,61,11,Типи дерев: BST/AVL/B/B+,factual,IMPRECISE,CONFIRMED
+P4-17,63,62,11,Типи дерев: BST/AVL/B/B+,factual,IMPRECISE,CONFIRMED
+P4-18,63,62,11,Типи дерев: BST/AVL/B/B+,factual,IMPRECISE,REJECTED
+P4-19,63,62,12,Графи,terminology,IMPRECISE,CWC
+P4-20,65,64,12,Графи,factual,ERROR,CONFIRMED
+P4-21,65,64,12,Графи,factual,IMPRECISE,CONFIRMED
+P4-22,65,64,12,Графи,factual,IMPRECISE,CWC
+P4-23,65,64,12,Графи,factual,IMPRECISE,CONFIRMED
+P4-24,65,64,12,Графи,factual,ERROR,CONFIRMED
+P4-25,65,64,12,Графи,factual,ERROR,CONFIRMED
+P4-26,65,64,12,Графи,spelling (term),IMPRECISE,CWC
+P4-27,66,65,12,Графи,factual,IMPRECISE,CONFIRMED
+P4-28,67,66,12,Графи,factual,IMPRECISE,CONFIRMED
+P4-29,68,67,13,Обходи графів / остовні дерева,terminology,IMPRECISE,CWC
+P4-30,68,67,13,Обходи графів / остовні дерева,terminology,IMPRECISE,CONFIRMED
+P4-31,69,68,13,Обходи графів / остовні дерева,diagram/inconsistency,ERROR,CONFIRMED
+P4-32,69,68,13,Обходи графів / остовні дерева,factual,IMPRECISE,CONFIRMED
+P4-33,70,69,13,Обходи графів / остовні дерева,factual,IMPRECISE,CONFIRMED
+P4-34,70,69,13,Обходи графів / остовні дерева,terminology,IMPRECISE,CONFIRMED
+P4-35,70,69,13,Обходи графів / остовні дерева,factual,ERROR,CONFIRMED
+P4-36,70,69,13,Обходи графів / остовні дерева,factual,ERROR,CONFIRMED
+P4-37,70,69,13,Обходи графів / остовні дерева,diagram,ERROR,CONFIRMED
+P4-38,70,69,13,Обходи графів / остовні дерева,diagram,ERROR,CONFIRMED
+P4-39,70,69,13,Обходи графів / остовні дерева,diagram,IMPRECISE,CONFIRMED
+P4-40,71,70,13,Обходи графів / остовні дерева,factual,IMPRECISE,CONFIRMED
+P4-41,71,70,13,Обходи графів / остовні дерева,factual,IMPRECISE,CONFIRMED
+P4-42,71,70,13,Обходи графів / остовні дерева,factual,ERROR,CONFIRMED
+P4-44,71,70,13,Обходи графів / остовні дерева,factual,IMPRECISE,CONFIRMED
+P4-45,71,70,13,Обходи графів / остовні дерева,factual,ERROR,CONFIRMED
+P4-46,71,70,13,Обходи графів / остовні дерева,factual,ERROR,CONFIRMED
+P4-47,72,71,13,Обходи графів / остовні дерева,factual,IMPRECISE,CONFIRMED
+P4-48,72,71,14,Пошук,factual,IMPRECISE,CONFIRMED
+P5-01,73,72,14,Пошук,pseudocode bug,ERROR,CONFIRMED
+P5-02,73,72,14,Пошук,inconsistency,IMPRECISE,CONFIRMED
+P5-03,73,72,14,Пошук,non-standard,ERROR,CONFIRMED
+P5-04,74,73,14,Пошук,UB,ERROR,CONFIRMED
+P5-05,74,73,14,Пошук,code quality,IMPRECISE,CWC
+P5-06,75,74,14,Пошук,factual,IMPRECISE,CONFIRMED
+P5-07,75,74,14,Пошук,overflow,IMPRECISE,CONFIRMED
+P5-08,76,75,14,Пошук,complexity,IMPRECISE,CWC
+P5-09,76,75,14,Пошук,typo,IMPRECISE,REJECTED
+P5-10,77,76,14,Пошук,inconsistency,IMPRECISE,CONFIRMED
+P5-11,78,77,14,Пошук,compile error,ERROR,CONFIRMED
+P5-12,78,77,14,Пошук,code bug,IMPRECISE,REJECTED
+P5-N1,79,78,15,Сортування,factual (inverted),IMPRECISE,NEW
+P5-13,80,79,15,Сортування,pseudocode bug,ERROR,CONFIRMED
+P5-14,80,79,15,Сортування,complexity,IMPRECISE,CONFIRMED
+P5-18,80,79,15,Сортування,inconsistency,ERROR,CONFIRMED
+P5-15,81,80,15,Сортування,terminology,ERROR,CONFIRMED
+P5-16,81,80,15,Сортування,compile error,ERROR,CONFIRMED
+P5-17,81,80,15,Сортування,code quality,IMPRECISE,CONFIRMED
+P5-19,82,81,15,Сортування,factual,IMPRECISE,CONFIRMED
+P5-20,82,81,15,Сортування,inconsistency,ERROR,CONFIRMED
+P5-21,82,81,15,Сортування,factual,IMPRECISE,CONFIRMED
+P5-22,83,82,15,Сортування,inconsistency,IMPRECISE,CWC
+P5-23,83,82,15,Сортування,pseudocode bug,ERROR,CONFIRMED
+P5-24,83,82,15,Сортування,terminology,IMPRECISE,CONFIRMED
+P5-25,84,83,15,Сортування,complexity,ERROR,CONFIRMED
+P5-26,84,83,15,Сортування,terminology,ERROR,CONFIRMED
+P5-27,84,83,15,Сортування,compile error,ERROR,REJECTED
+P5-28,84,83,15,Сортування,compile error,ERROR,CONFIRMED
+P5-29,84,83,15,Сортування,UB (OOB),ERROR,CONFIRMED
+P5-30,85,84,15,Сортування,compile error,ERROR,CONFIRMED
+P5-31,85,84,15,Сортування,compile error,IMPRECISE,CONFIRMED
+P5-32,86,85,15,Сортування,factual,IMPRECISE,CWC
+P5-33,86,85,15,Сортування,factual,IMPRECISE,CONFIRMED
+P5-34,86,85,15,Сортування,typo,ERROR,CONFIRMED
+P5-35,86,85,15,Сортування,terminology,IMPRECISE,CONFIRMED
+P5-N2,86,85,15,Сортування,factual,IMPRECISE,NEW
+P5-36,87,86,15,Сортування,layout,IMPRECISE,CONFIRMED
+P5-37,87,86,15,Сортування,complexity,IMPRECISE,CONFIRMED
+P5-38,87,86,15,Сортування,compile error,ERROR,CONFIRMED
+P5-39,87,86,15,Сортування,compile error,ERROR,CONFIRMED
+P5-40,88,87,15,Сортування,infinite recursion,ERROR,CONFIRMED
+P5-41,88,87,15,Сортування,compile error,ERROR,CONFIRMED
+P5-42,88,87,15,Сортування,compile error,ERROR,CONFIRMED
+P5-43,88,87,15,Сортування,inconsistency,IMPRECISE,REJECTED
+P5-44,89,88,15,Сортування,incomplete,IMPRECISE,CONFIRMED
+P5-45,89,88,15,Сортування,factual,IMPRECISE,CONFIRMED
+P5-46,90,89,15,Сортування,compile error,ERROR,CONFIRMED
+P5-47,90,89,15,Сортування,stability / complexity,IMPRECISE,CONFIRMED
+P6-01,91,90,15,Сортування,terminology,IMPRECISE,CONFIRMED
+P6-02,91,90,15,Сортування,overflow,IMPRECISE,CONFIRMED
+P6-03,91,90,15,Сортування,omission,IMPRECISE,CWC
+P6-N1,91,90,15,Сортування,compile error,ERROR,NEW
+P6-04,92,91,15,Сортування,portability,IMPRECISE,CONFIRMED
+P6-05,92,91,15,Сортування,style,IMPRECISE,CONFIRMED
+P6-32,99,93,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-33,99,93,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-34,100,94,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-35,100,94,16,Співбесіда Q1–Q50,terminology,ERROR,CONFIRMED
+P6-36,101,95,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-37,101,95,16,Співбесіда Q1–Q50,typo,IMPRECISE,CONFIRMED
+P6-38,101,95,16,Співбесіда Q1–Q50,factual,ERROR,CONFIRMED
+P6-39,101,95,16,Співбесіда Q1–Q50,complexity,IMPRECISE,CONFIRMED
+P6-40,102,96,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-41,103,97,16,Співбесіда Q1–Q50,terminology,IMPRECISE,CONFIRMED
+P6-42,103,97,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-43,103,97,16,Співбесіда Q1–Q50,code bug / UB,ERROR,CONFIRMED
+P6-44,104,98,16,Співбесіда Q1–Q50,context,IMPRECISE,CWC
+P6-45,104,98,16,Співбесіда Q1–Q50,factual,ERROR,CONFIRMED
+P6-46,105,99,16,Співбесіда Q1–Q50,inconsistency,IMPRECISE,CONFIRMED
+P6-47,105,99,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-48,105,99,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-49,105,99,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-50,106,100,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-51,106,100,16,Співбесіда Q1–Q50,terminology,IMPRECISE,CONFIRMED
+P6-52,107,101,16,Співбесіда Q1–Q50,terminology,ERROR,CONFIRMED
+P6-53,107,101,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-54,107,101,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-55,108,102,16,Співбесіда Q1–Q50,factual,IMPRECISE,CONFIRMED
+P6-56,108,102,16,Співбесіда Q1–Q50,incomplete,IMPRECISE,CONFIRMED
+P6-57,108,102,16,Співбесіда Q1–Q50,wording,IMPRECISE,CWC
+P6-58,109,103,16,Співбесіда Q1–Q50,incomplete,IMPRECISE,CONFIRMED
+P6-06,94,104,17,Задачі з кодом,portability,ERROR,CONFIRMED
+P6-07,94,104,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-08,94,104,17,Задачі з кодом,logic,ERROR,CONFIRMED
+P6-09,94,104,17,Задачі з кодом,typo,IMPRECISE,CONFIRMED
+P6-10,94,104,17,Задачі з кодом,robustness,IMPRECISE,CONFIRMED
+P6-11,94,104,17,Задачі з кодом,code bug,IMPRECISE,CONFIRMED
+P6-N2,94,104,17,Задачі з кодом,compile error,ERROR,NEW
+P6-12,95,105,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-13,95,105,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-14,95,105,17,Задачі з кодом,latent UB,ERROR,CWC
+P6-15,95,105,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-16,95,105,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-17,95,105,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-24,95,105,17,Задачі з кодом,leak,ERROR,CONFIRMED
+P6-N4,95,105,17,Задачі з кодом,possible compile error,IMPRECISE,NEW
+P6-18,96,106,17,Задачі з кодом,code bug,ERROR,CONFIRMED
+P6-19,96,106,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-20,96,106,17,Задачі з кодом,code bug,ERROR,CONFIRMED
+P6-21,96,106,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-22,96,106,17,Задачі з кодом,compile error,ERROR,CONFIRMED
+P6-23,96,106,17,Задачі з кодом,inconsistency,ERROR,CONFIRMED
+P6-N3,96,106,17,Задачі з кодом,compile error,ERROR,NEW
+P6-25,97,107,17,Задачі з кодом,off-by-one / UB,ERROR,CONFIRMED
+P6-26,97,107,17,Задачі з кодом,inconsistency,IMPRECISE,CWC
+P6-27,97,107,17,Задачі з кодом,UB (latent),ERROR,CWC
+P6-28,97,107,17,Задачі з кодом,code bug,IMPRECISE,CONFIRMED
+P6-29,97,107,17,Задачі з кодом,latent UB,IMPRECISE,CONFIRMED
+P6-30,97,107,17,Задачі з кодом,style,IMPRECISE,CONFIRMED
+P6-31,98,108,17,Задачі з кодом,compile error,ERROR,CONFIRMED

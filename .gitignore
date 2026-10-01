@@ -1,0 +1,5 @@
+.venv/
+build/
+*.o
+*.dSYM/
+__pycache__/

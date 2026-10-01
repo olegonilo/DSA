@@ -1,0 +1,36 @@
+cc -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude -O2 -march=native bench/bench_ds.c src/common.c src/sort.c src/search.c src/list.c src/skiplist.c src/stack_queue.c src/tree.c src/graph.c -o build/bench/bench_ds -lm
+cc -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude -O2 -march=native bench/bench_graph.c src/common.c src/sort.c src/search.c src/list.c src/skiplist.c src/stack_queue.c src/tree.c src/graph.c -o build/bench/bench_graph -lm
+cc -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude -O2 -march=native -DDSA_COUNT bench/bench_ops.c src/common.c src/sort.c src/search.c src/list.c src/skiplist.c src/stack_queue.c src/tree.c src/graph.c -o build/bench/bench_ops -lm
+cc -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude -O2 -march=native bench/bench_search.c src/common.c src/sort.c src/search.c src/list.c src/skiplist.c src/stack_queue.c src/tree.c src/graph.c -o build/bench/bench_search -lm
+cc -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude -O2 -march=native bench/bench_sort.c src/common.c src/sort.c src/search.c src/list.c src/skiplist.c src/stack_queue.c src/tree.c src/graph.c -o build/bench/bench_sort -lm
+== build/bench/bench_ds
+  traverse done
+  growth done
+  bst done
+  skiplist done
+  heap done
+== build/bench/bench_graph
+  graph done
+== build/bench/bench_ops
+  sort_ops done
+  search_ops done
+== build/bench/bench_search
+== build/bench/bench_sort
+  bubble_naive       done
+  bubble             done
+  selection          done
+  insertion          done
+  insertion_binary   done
+  shell_halving      done
+  shell_ciura        done
+  merge_topdown      done
+  merge_bottomup     done
+  quick_lomuto_last  done
+  quick_hoare_mid    done
+  quick_median3      done
+  quick_3way         done
+  heap               done
+  counting           done
+  radix_lsd          done
+  bucket             done
+  libc_qsort         done
