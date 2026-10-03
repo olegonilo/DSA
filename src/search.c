@@ -19,7 +19,7 @@ ptrdiff_t search_linear(const int *a, size_t n, int key) {
 }
 
 ptrdiff_t search_linear_sentinel(int *a, size_t n, int key) {
-    /* Сторож: кладемо key у кінець — у циклі одна перевірка замість двох (i<n та a[i]==key). */
+    /* Sentinel: put key at the end - one check per iteration instead of two (i<n and a[i]==key). */
     if (n == 0) return -1;
     int last = a[n - 1];
     a[n - 1] = key;
@@ -31,9 +31,9 @@ ptrdiff_t search_linear_sentinel(int *a, size_t n, int key) {
 }
 
 ptrdiff_t search_binary(const int *a, size_t n, int key) {
-    size_t lo = 0, hi = n;               /* напіввідкритий інтервал [lo, hi) — без -1 і без underflow */
+    size_t lo = 0, hi = n;               /* half-open interval [lo, hi) - no -1 and no underflow */
     while (lo < hi) {
-        size_t mid = lo + (hi - lo) / 2; /* не (lo+hi)/2 — див. experiments/ex_binary_overflow.c */
+        size_t mid = lo + (hi - lo) / 2; /* not (lo+hi)/2 - see experiments/ex_binary_overflow.c */
         C_CMP();
         if (a[mid] == key) return (ptrdiff_t)mid;
         C_CMP();
@@ -65,8 +65,8 @@ ptrdiff_t search_lower_bound(const int *a, size_t n, int key) {
 }
 
 ptrdiff_t search_branchless(const int *a, size_t n, int key) {
-    /* Кількість ітерацій фіксована (ceil(log2 n)), тіло компілюється у cmov/csel —
-     * немає mispredict-ів гілок. Див. bench_search: виграш на масивах, що влазять у кеш. */
+    /* The iteration count is fixed (ceil(log2 n)), the body compiles to cmov/csel -
+     * no branch mispredicts. See bench_search: it wins on arrays that fit in cache. */
     if (n == 0) return -1;
     const int *base = a;
     size_t len = n;
@@ -85,8 +85,8 @@ ptrdiff_t search_interpolation(const int *a, size_t n, int key) {
     size_t lo = 0, hi = n - 1;
     while (lo <= hi && key >= a[lo] && key <= a[hi]) {
         C_CMP();
-        if (a[hi] == a[lo]) return a[lo] == key ? (ptrdiff_t)lo : -1; /* захист від ділення на 0 */
-        /* 64-бітна арифметика: (key-a[lo])*(hi-lo) переповнює int вже при ~46341^2 */
+        if (a[hi] == a[lo]) return a[lo] == key ? (ptrdiff_t)lo : -1; /* guard against division by 0 */
+        /* 64-bit arithmetic: (key-a[lo])*(hi-lo) overflows int already at ~46341^2 */
         int64_t num = ((int64_t)key - a[lo]) * (int64_t)(hi - lo);
         size_t pos = lo + (size_t)(num / ((int64_t)a[hi] - a[lo]));
         C_CMP();
@@ -140,9 +140,9 @@ ptrdiff_t search_ternary(const int *a, size_t n, int key) {
 }
 
 int binary_mid_buggy(int lo, int hi) {
-    /* Відтворюємо те, що робить "int mid = (lo+hi)/2" на апаратному рівні, без UB:
-     * беззнакове додавання (модульне, 6.2.5p9) + перетворення в int (implementation-defined,
-     * у clang/gcc — wrap-around). Сам вираз lo+hi на int при переповненні — UB (C11 6.5p5). */
+    /* Reproduce what "int mid = (lo+hi)/2" does at the hardware level, without UB:
+     * unsigned addition (modular, 6.2.5p9) + conversion to int (implementation-defined,
+     * wrap-around in clang/gcc). The expression lo+hi on int itself is UB on overflow (C11 6.5p5). */
     unsigned s = (unsigned)lo + (unsigned)hi;
     return (int)s / 2;
 }

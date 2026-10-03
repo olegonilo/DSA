@@ -1,9 +1,9 @@
-/* Конспект, insertion sort (notebook p.89, PDF p.90):
- *     while (j >= 0 && temp <= a[j])      <- "<=" замість "<"
- * Наслідки:
- *   (1) сортування стає НЕСТАБІЛЬНИМ: рівний елемент перестрибує через рівних;
- *   (2) на масиві з однакових елементів — Θ(n^2) зсувів замість 0 (best case перетворюється на worst).
- * Перевіряємо обидва на записах (ключ, початковий номер). */
+/* The notes, insertion sort (notebook p.89, PDF p.90):
+ *     while (j >= 0 && temp <= a[j])      <- "<=" instead of "<"
+ * Consequences:
+ *   (1) the sort becomes UNSTABLE: an element jumps over equal elements;
+ *   (2) on an array of identical elements — Θ(n^2) shifts instead of 0 (the best case turns into the worst).
+ * Both are checked on records (key, original index). */
 #include <stdio.h>
 
 typedef struct { int key, id; } rec;
@@ -23,15 +23,15 @@ int main(void) {
         rec r[] = {{2, 0}, {1, 1}, {2, 2}, {1, 3}, {2, 4}};
         moves = 0;
         insertion(r, 5, le);
-        printf("%s: ", le ? "temp <= a[j] (конспект)" : "temp <  a[j] (виправлено)");
+        printf("%s: ", le ? "temp <= a[j] (the notes)" : "temp <  a[j] (fixed)");
         int stable = 1;
         for (int i = 0; i < 5; i++) {
             printf("(%d,#%d) ", r[i].key, r[i].id);
             if (i && r[i].key == r[i - 1].key && r[i].id < r[i - 1].id) stable = 0;
         }
-        printf("-> %s\n", stable ? "стабільно" : "НЕСТАБІЛЬНО");
+        printf("-> %s\n", stable ? "stable" : "UNSTABLE");
     }
-    printf("\nЗсуви на масиві з n однакових ключів:\n%8s %16s %16s\n", "n", "<= (конспект)", "< (виправлено)");
+    printf("\nShifts on an array of n identical keys:\n%8s %16s %16s\n", "n", "<= (the notes)", "< (fixed)");
     static rec eq[20000];
     for (int n = 1000; n <= 16000; n *= 2) {
         unsigned long long m[2];

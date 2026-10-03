@@ -18,8 +18,8 @@ static const struct { const char *name; search_fn fn; } fns[] = {
     {"ternary", search_ternary},
 };
 
-/* Для масиву без дублікатів: кожен присутній ключ знаходиться точно за своїм індексом,
- * кожен відсутній (між елементами, менший за min, більший за max) дає -1. */
+/* For an array without duplicates: every present key is found exactly at its index,
+ * every absent one (between elements, below min, above max) yields -1. */
 static void test_all_searches(void) {
     for (size_t n = 0; n <= 70; n++) {
         int *a = malloc((n ? n : 1) * sizeof *a);
@@ -37,14 +37,14 @@ static void test_all_searches(void) {
         for (size_t i = 0; i < n; i++) b[i] = a[i];
         for (size_t i = 0; i < n; i++) CHECK_EQ_INT(search_linear_sentinel(b, n, a[i]), i);
         CHECK_EQ_INT(search_linear_sentinel(b, n, -5), -1);
-        for (size_t i = 0; i < n; i++) CHECK_EQ_INT(b[i], a[i]); /* сторож відновлено */
+        for (size_t i = 0; i < n; i++) CHECK_EQ_INT(b[i], a[i]); /* sentinel restored */
         free(a);
         free(b);
     }
 }
 
 static void test_interpolation_extreme_values(void) {
-    /* У наївній версії (key-a[lo])*(hi-lo) на int переповнюється. */
+    /* In the naive version (key-a[lo])*(hi-lo) overflows int. */
     int a[] = {INT_MIN, -1000000000, 0, 1000000000, INT_MAX};
     for (size_t i = 0; i < 5; i++) CHECK_EQ_INT(search_interpolation(a, 5, a[i]), i);
     CHECK_EQ_INT(search_interpolation(a, 5, 5), -1);
@@ -59,7 +59,7 @@ static void test_lower_bound(void) {
 }
 
 static void test_binary_comparisons_bound(void) {
-    /* Ітеративний бінарний пошук: не більше floor(log2 n)+1 ітерацій (по 2 порівняння). */
+    /* Iterative binary search: at most floor(log2 n)+1 iterations (2 comparisons each). */
     enum { N = 1 << 20 };
     int *a = malloc(N * sizeof *a);
     for (int i = 0; i < N; i++) a[i] = i;
@@ -75,7 +75,7 @@ static void test_binary_comparisons_bound(void) {
 
 static void test_mid_overflow_demo(void) {
     int lo = INT_MAX - 10, hi = INT_MAX - 2;
-    CHECK(binary_mid_buggy(lo, hi) < 0);              /* "від'ємний індекс" */
+    CHECK(binary_mid_buggy(lo, hi) < 0);              /* "negative index" */
     CHECK_EQ_INT(binary_mid_safe(lo, hi), INT_MAX - 6);
 }
 

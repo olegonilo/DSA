@@ -1,4 +1,4 @@
-/* Тести лінійних структур: списки, skip list, стек, черги, застосування стеку. */
+/* Tests for linear structures: lists, skip list, stack, queues, stack applications. */
 #include "dsa_list.h"
 #include "dsa_skiplist.h"
 #include "dsa_stack_queue.h"
@@ -15,11 +15,11 @@ static void test_sll(void) {
     CHECK_EQ_INT(sll_insert_at(&l, 99, 1), -1);
     CHECK_EQ_INT(l.size, 7);
     CHECK_EQ_INT(sll_middle(&l)->data, 100);
-    CHECK_EQ_INT(sll_remove_value(&l, 4), 0);                /* видалення хвоста оновлює tail */
+    CHECK_EQ_INT(sll_remove_value(&l, 4), 0);                /* removing the tail updates tail */
     CHECK_EQ_INT(l.tail->data, 3);
     sll_push_back(&l, 7);
     CHECK_EQ_INT(l.tail->data, 7);
-    CHECK_EQ_INT(sll_remove_value(&l, -1), 0);               /* голова */
+    CHECK_EQ_INT(sll_remove_value(&l, -1), 0);               /* head */
     CHECK_EQ_INT(sll_remove_value(&l, 12345), -1);
     sll_reverse(&l);                                         /* 7 3 2 100 1 0 */
     int expect[] = {7, 3, 2, 100, 1, 0}, k = 0;
@@ -27,7 +27,7 @@ static void test_sll(void) {
     CHECK_EQ_INT(k, 6);
     CHECK_EQ_INT(l.tail->data, 0);
     CHECK(!sll_has_cycle(l.head));
-    l.tail->next = l.head->next->next;                       /* штучний цикл */
+    l.tail->next = l.head->next->next;                       /* artificial cycle */
     CHECK(sll_has_cycle(l.head));
     l.tail->next = NULL;
     int v;
@@ -42,7 +42,7 @@ static void test_dll_cll(void) {
     dll_init(&d);
     for (int i = 0; i < 4; i++) dll_push_back(&d, i);
     dll_push_front(&d, -1);
-    dll_unlink(&d, d.head->next->next);                      /* видалити 1 за O(1) */
+    dll_unlink(&d, d.head->next->next);                      /* remove 1 in O(1) */
     int expect[] = {-1, 0, 2, 3}, k = 0;
     for (dll_node *p = d.head; p; p = p->next) CHECK_EQ_INT(p->data, expect[k++]);
     k = 3;
@@ -52,7 +52,7 @@ static void test_dll_cll(void) {
     CHECK_EQ_INT(v, 3);
     dll_free(&d);
 
-    /* Josephus: відомі значення J(n,k) */
+    /* Josephus: known values of J(n,k) */
     CHECK_EQ_INT(josephus_cll(7, 3), 4);
     CHECK_EQ_INT(josephus_cll(41, 3), 31);
     CHECK_EQ_INT(josephus_cll(1, 5), 1);
@@ -64,10 +64,10 @@ static void test_skiplist(void) {
     for (int t = 0; t < 2; t++) {
         skiplist s;
         CHECK_EQ_INT(skip_init(&s, ps[t], 7), 0);
-        /* приклад з конспекту: 6, 29, 22, 9, 17, 4 */
+        /* example from the notes: 6, 29, 22, 9, 17, 4 */
         int keys[] = {6, 29, 22, 9, 17, 4};
         for (int i = 0; i < 6; i++) CHECK_EQ_INT(skip_insert(&s, keys[i]), 1);
-        CHECK_EQ_INT(skip_insert(&s, 22), 0);                /* дублікат */
+        CHECK_EQ_INT(skip_insert(&s, 22), 0);                /* duplicate */
         int prev = -1, cnt = 0;
         for (skip_node *x = s.head->next[0]; x; x = x->next[0]) { CHECK(x->key > prev); prev = x->key; cnt++; }
         CHECK_EQ_INT(cnt, 6);
@@ -78,7 +78,7 @@ static void test_skiplist(void) {
         CHECK(!skip_contains(&s, 9));
         for (int i = 0; i < 20000; i++) skip_insert(&s, (i * 7919) % 20011);
         for (int i = 0; i < 20000; i += 3) CHECK(skip_contains(&s, (i * 7919) % 20011));
-        /* кожен рівень i — підпослідовність рівня i-1, відсортована */
+        /* each level i is a sorted subsequence of level i-1 */
         for (int lv = 0; lv < s.level; lv++) {
             int pk = -1;
             for (skip_node *x = s.head->next[lv]; x; x = x->next[lv]) { CHECK(x->key > pk); CHECK(x->level > lv); pk = x->key; }
@@ -101,7 +101,7 @@ static void test_stack_queue(void) {
     cq_init(&q, 3);
     CHECK_EQ_INT(cq_dequeue(&q, &v), -1);
     cq_enqueue(&q, 1); cq_enqueue(&q, 2); cq_enqueue(&q, 3);
-    CHECK_EQ_INT(cq_enqueue(&q, 4), -1);                     /* full — використано ВСІ 3 клітинки */
+    CHECK_EQ_INT(cq_enqueue(&q, 4), -1);                     /* full - ALL 3 cells are used */
     cq_dequeue(&q, &v); CHECK_EQ_INT(v, 1);
     CHECK_EQ_INT(cq_enqueue(&q, 4), 0);                      /* wrap-around */
     for (int e = 2; e <= 4; e++) { cq_dequeue(&q, &v); CHECK_EQ_INT(v, e); }
@@ -112,7 +112,7 @@ static void test_stack_queue(void) {
     lq_init(&lq, 3);
     lq_enqueue(&lq, 1); lq_enqueue(&lq, 2); lq_enqueue(&lq, 3);
     lq_dequeue(&lq, &v); lq_dequeue(&lq, &v);
-    CHECK_EQ_INT(lq_enqueue(&lq, 4), -1);  /* недолік лінійної черги: 2 вільні клітинки, але "overflow" */
+    CHECK_EQ_INT(lq_enqueue(&lq, 4), -1);  /* linear queue flaw: 2 free cells, yet "overflow" */
     lq_free(&lq);
 
     deque d;
@@ -138,9 +138,9 @@ static void test_stack_applications(void) {
     CHECK(strcmp(out, "abc*+") == 0);
     CHECK_EQ_INT(infix_to_postfix("(a+b)*c-d/e", out, sizeof out), 0);
     CHECK(strcmp(out, "ab+c*de/-") == 0);
-    CHECK_EQ_INT(infix_to_postfix("a^b^c", out, sizeof out), 0);   /* правоасоціативний */
+    CHECK_EQ_INT(infix_to_postfix("a^b^c", out, sizeof out), 0);   /* right-associative */
     CHECK(strcmp(out, "abc^^") == 0);
-    CHECK_EQ_INT(infix_to_postfix("a-b-c", out, sizeof out), 0);   /* лівоасоціативний */
+    CHECK_EQ_INT(infix_to_postfix("a-b-c", out, sizeof out), 0);   /* left-associative */
     CHECK(strcmp(out, "ab-c-") == 0);
     CHECK_EQ_INT(infix_to_postfix("(a+b", out, sizeof out), -1);
     CHECK_EQ_INT(infix_to_postfix("a+b)", out, sizeof out), -1);
@@ -152,28 +152,28 @@ static void test_stack_applications(void) {
     CHECK_EQ_INT(eval_postfix("2+", &err), 0);
     CHECK_EQ_INT(err, -1);
     CHECK_EQ_INT(infix_to_postfix("2^3^2", out, sizeof out), 0);
-    CHECK_EQ_INT(eval_postfix(out, &err), 512);                     /* 2^(3^2), а не (2^3)^2=64 */
+    CHECK_EQ_INT(eval_postfix(out, &err), 512);                     /* 2^(3^2), not (2^3)^2=64 */
 }
 
-/* Регресії з код-рев'ю: кожен тест відтворює знайдений дефект. */
+/* Regressions from code review: each test reproduces a defect that was found. */
 static void test_review_regressions(void) {
     int err;
-    eval_postfix("99*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*", &err); /* 9^22 > LONG_MAX: було UB */
+    eval_postfix("99*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*9*", &err); /* 9^22 > LONG_MAX: used to be UB */
     CHECK_EQ_INT(err, -1);
-    eval_postfix("99^9^", &err);                                       /* (9^9)^9: було ~4e8 ітерацій + UB */
+    eval_postfix("99^9^", &err);                                       /* (9^9)^9: used to be ~4e8 iterations + UB */
     CHECK_EQ_INT(err, -1);
-    eval_postfix("201-^", &err);                                       /* 2^(-1): було тихе "1" */
+    eval_postfix("201-^", &err);                                       /* 2^(-1): used to silently return "1" */
     CHECK_EQ_INT(err, -1);
     CHECK_EQ_INT(eval_postfix("29^", &err), 512);
     CHECK_EQ_INT(err, 0);
 
     stack s;
     stack_init(&s);
-    CHECK_EQ_INT(stack_push_grow_linear(&s, 1, 0), -1);                /* k == 0: було heap-buffer-overflow */
+    CHECK_EQ_INT(stack_push_grow_linear(&s, 1, 0), -1);                /* k == 0: used to be heap-buffer-overflow */
     stack_free(&s);
 
-    /* Josephus проти рекурентності J(1)=0, J(m)=(J(m-1)+k) mod m (0-індексація), у т.ч. k >> n.
-     * До виправлення k = 10^9 означало 10^9 кроків по колу на кожне вибуття. */
+    /* Josephus vs. the recurrence J(1)=0, J(m)=(J(m-1)+k) mod m (0-based), including k >> n.
+     * Before the fix, k = 10^9 meant 10^9 steps around the circle per elimination. */
     const int ks[] = {1, 2, 3, 7, 1000, 1000000000};
     for (int n = 1; n <= 40; n++)
         for (size_t t = 0; t < sizeof ks / sizeof *ks; t++) {

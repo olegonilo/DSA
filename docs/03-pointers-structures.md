@@ -1,63 +1,63 @@
-# 03. Вказівники і структури
+# 03. Pointers and structures
 
-Конспект: notebook p.18–22 (PDF p.19–23). Помилки: розділи 03–04 в [`errata/ERRATA-full.md`](../errata/ERRATA-full.md).
+Notes: notebook p.18–22 (PDF p.19–23). Errors: chapters 03–04 in [`errata/ERRATA-full.md`](../errata/ERRATA-full.md).
 
-## Вказівник — точне визначення
+## Pointer — the exact definition
 
-Вказівник — це **змінна, значення якої є адресою об'єкта певного типу** (C11 6.2.5p20).
-Конспект: «used to points the address of the value» (P2-N1) — граматично і змістовно розмито.
+A pointer is **a variable whose value is the address of an object of a particular type** (C11 6.2.5p20).
+The notes: "used to points the address of the value" (P2-N1) — vague both grammatically and in meaning.
 
 ```
   int a = 10;        int *b = &a;        int **c = &b;
-  адреса 2000        адреса 3000         адреса 4000
+  address 2000       address 3000        address 4000
  ┌──────────┐       ┌──────────┐        ┌──────────┐
  │    10    │ ◄──── │   2000   │ ◄───── │   3000   │
  └──────────┘       └──────────┘        └──────────┘
       a                 b = &a              c = &b      *c == b, **c == a == 10
 ```
 
-На діаграмі конспекту (p.18) обидві клітинки **порожні** (P2-02), а під заголовком «pointer to pointer»
-намальовано лише один рівень (P2-N2). Вище — повна версія.
+In the diagram in the notes (p.18) both cells are **empty** (P2-02), and under the heading "pointer to pointer"
+only one level is drawn (P2-N2). Above is the complete version.
 
-### Арифметика вказівників
+### Pointer arithmetic
 
-Конспект перелічує `++, --, +, -` (P2-01). Дозволено також `+=`, `-=`, **різницю двох вказівників**
-в межах одного масиву (тип `ptrdiff_t`) і порівняння `<, >, <=, >=` (C11 6.5.6, 6.5.8).
-`p + k` зсуває на `k * sizeof *p` **байтів**, а не на k.
+The notes list `++, --, +, -` (P2-01). Also allowed are `+=`, `-=`, **the difference of two pointers**
+within the same array (type `ptrdiff_t`) and the comparisons `<, >, <=, >=` (C11 6.5.6, 6.5.8).
+`p + k` advances by `k * sizeof *p` **bytes**, not by k.
 
-**Межі (C11 6.5.6p8):** дозволено формувати вказівник на елементи масиву і на позицію *одразу за кінцем*.
-Навіть *обчислення* `p + 16k` далі за кінець — UB, ще до розіменування. Саме тому в
-`bench/bench_search.c` префетч-адреса обмежена n (і окремо показано, скільки коштує вихід за межі:
-38.1 нс проти 6.05 нс на пошук при n = 1024).
+**Bounds (C11 6.5.6p8):** you may form a pointer to the elements of an array and to the position *one past the end*.
+Even *computing* `p + 16k` further past the end is UB, before any dereference. That is why in
+`bench/bench_search.c` the prefetch address is clamped to n (and the cost of going out of bounds is shown separately:
+38.1 ns vs 6.05 ns per search at n = 1024).
 
-### Друк адрес — UB у конспекті
+### Printing addresses — UB in the notes
 
 ```c
-printf("address of a = %u \n", &a);   // конспект, p.19–20
+printf("address of a = %u \n", &a);   // the notes, p.19–20
 printf("address of a = %d \n", b);
 ```
 
-Передача `int *` для `%u`/`%d` — **невизначена поведінка** (C11 7.21.6.1p9). На 64-бітній машині
-надруковано лише молодші 32 біти адреси, тому в конспекті з'являється «від'ємна адреса»:
-3010494292 − 2³² = −1284473004 — той самий вказівник, прочитаний як знаковий 32-бітний int (P2-04).
-Правильно:
+Passing an `int *` for `%u`/`%d` is **undefined behavior** (C11 7.21.6.1p9). On a 64-bit machine
+only the low 32 bits of the address are printed, which is why a "negative address" appears in the notes:
+3010494292 − 2³² = −1284473004 — the same pointer read as a signed 32-bit int (P2-04).
+Correct:
 
 ```c
 printf("address of a = %p\n", (void *)&a);
 ```
 
-## Структури
+## Structures
 
-### Код з конспекту не компілюється
+### The code in the notes doesn't compile
 
-| Рядок конспекту | Проблема | ID |
+| Line in the notes | Problem | ID |
 |---|---|---|
 | `void main()` | clang: `error: 'main' must return 'int'` | P2-08 |
-| `#include <conio.h>`, `getch()` | Turbo C/DOS, не ISO C | P2-09 |
-| `int mobile;` | 10-значний номер > INT_MAX = 2 147 483 647; номер телефону — рядок, не число | P2-10 |
-| `printf (%d %f %d", &e3.id, ...)` | бракує `"`, і це має бути `scanf` — e3 ніколи не читається | P2-11 |
+| `#include <conio.h>`, `getch()` | Turbo C/DOS, not ISO C | P2-09 |
+| `int mobile;` | a 10-digit number > INT_MAX = 2 147 483 647; a phone number is a string, not a number | P2-10 |
+| `printf (%d %f %d", &e3.id, ...)` | missing `"`, and it should be `scanf` — e3 is never read | P2-11 |
 
-Перевірка розміру (`make experiments` → `ex_struct_padding`):
+Size check (`make experiments` → `ex_struct_padding`):
 
 ```
 sizeof(struct employee_notes) = 28 (id@0 name@4 mobile@24)
@@ -65,28 +65,28 @@ sizeof(bad_order)  = 32  {char, double, char, int, char}
 sizeof(good_order) = 16  {double, int, char, char, char}
 ```
 
-**Порядок полів змінює розмір удвічі.** Компілятор не може переставити поля (C11 6.7.2.1p15:
-поля розташовуються в порядку оголошення), але може вставити заповнення (padding) для вирівнювання.
-Правило: оголошуйте поля від найбільшого вирівнювання до найменшого.
+**Field order changes the size by a factor of two.** The compiler cannot reorder fields (C11 6.7.2.1p15:
+members are laid out in declaration order), but it can insert padding for alignment.
+Rule: declare fields from the largest alignment to the smallest.
 
-### Експеримент: Array of Structs vs Struct of Arrays
+### Experiment: Array of Structs vs Struct of Arrays
 
-Якщо потрібне одне поле (сума зарплат), AoS читає з пам'яті весь запис, а SoA лише потрібне поле:
+If only one field is needed (sum of salaries), AoS reads the whole record from memory, while SoA reads only the needed field:
 
 ```
-Сума зарплат 1048576 записів (найкращий з 7):
-  AoS (64 Б/запис, читаємо 64 МБ): 0.79 нс/запис
-  SoA ( 8 Б/запис, читаємо 8 МБ): 0.26 нс/запис
-  прискорення SoA: 3.0x
+Sum of salaries over 1048576 records (best of 7):
+  AoS (64 B/record, reading 64 MB): 0.79 ns/record
+  SoA ( 8 B/record, reading 8 MB): 0.26 ns/record
+  SoA speedup: 3.0x
 ```
 
-Підводний камінь вимірювання: з **одним** акумулятором `s += x` різниця була лише 1.3×. Цикл
-впирався в затримку FP-додавання (кожна ітерація чекає на попередню), а не в пам'ять. Лише
-4 незалежні акумулятори показали справжню різницю. Чесне застереження: 3.0× (3.0–3.3× у різних прогонах) — це не тільки «у 8 разів менше байтів».
-8 МБ SoA вміщуються в L2 (16 МБ) і з другого повтору читаються з кешу, а 64 МБ AoS щоразу йдуть з DRAM.
-Виміряне прискорення = менше байтів + кешування; окремо ці два внески тут не розділено.
+Measurement pitfall: with **one** accumulator `s += x` the difference was only 1.3×. The loop
+was bound by FP-add latency (each iteration waits for the previous one), not by memory. Only
+4 independent accumulators revealed the real difference. Honest caveat: 3.0× (3.0–3.3× across runs) is not just "8 times fewer bytes".
+The 8 MB of SoA fit in L2 (16 MB) and are read from cache from the second repetition on, while the 64 MB of AoS come from DRAM every time.
+The measured speedup = fewer bytes + caching; the two contributions are not separated here.
 
-## Перевір себе
+## Check yourself
 
-1. Чому `sizeof(struct {char c; int i;})` найімовірніше 8, а не 5? Від чого це залежить?
-2. Чому `int *p = arr + 10;` для `int arr[10]` коректний, а `arr + 11` — UB, навіть без `*`?
+1. Why is `sizeof(struct {char c; int i;})` most likely 8 and not 5? What does it depend on?
+2. Why is `int *p = arr + 10;` valid for `int arr[10]`, while `arr + 11` is UB even without `*`?

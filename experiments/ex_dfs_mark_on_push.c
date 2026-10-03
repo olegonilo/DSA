@@ -1,16 +1,16 @@
-/* Конспект, DFS (notebook p.68–69, PDF p.69–70):
+/* The notes, DFS (notebook p.68–69, PDF p.69–70):
  *   step 4: Pop top node N. Process it, STATUS = 3.
  *   step 5: Push on stack all neighbours of N that are in ready state (STATUS = 1), set STATUS = 2.
- * Вершина позначається "waiting" В МОМЕНТ PUSH. Тому якщо вершина вже лежить у стеку, а пізніше
- * виявляється сусідом глибшої вершини, її не можна покласти ще раз зверху — і порядок обробки
- * перестає бути порядком пошуку в глибину (немає гарантії, що це DFS-обхід якогось DFS-дерева).
+ * A vertex is marked "waiting" AT PUSH TIME. So if a vertex is already on the stack and later
+ * turns out to be a neighbour of a deeper vertex, it cannot be pushed again on top — and the processing
+ * order stops being a depth-first order (there is no guarantee it is a DFS traversal of any DFS tree).
  *
- * Контрприклад: ребра A–B, A–C, A–D, B–D. Сусіди проштовхуються в алфавітному порядку.
- *   Конспект:  push A; pop A -> push B,C,D; pop D -> (B вже waiting) нічого; pop C; pop B
- *              порядок: A D C B. Після D справжній DFS мусить піти в B (сусід D, ще не відвіданий),
- *              а тут обробляється C — не сусід D. Отже A D C B не є DFS-порядком.
- *   Правильно: позначати при POP (вершина може лежати в стеку кілька разів) або рекурсія.
- *              Порядок з тим же правилом проштовхування: A D B C. */
+ * Counterexample: edges A–B, A–C, A–D, B–D. Neighbours are pushed in alphabetical order.
+ *   The notes: push A; pop A -> push B,C,D; pop D -> (B already waiting) nothing; pop C; pop B
+ *              order: A D C B. After D a real DFS must go to B (a neighbour of D, not yet visited),
+ *              but here C is processed — not a neighbour of D. So A D C B is not a DFS order.
+ *   Correct:   mark on POP (a vertex may sit on the stack several times) or use recursion.
+ *              Order with the same push rule: A D B C. */
 #include <stdio.h>
 
 enum { V = 4 };
@@ -27,7 +27,7 @@ static void dfs_notes(void) {
     int status[V], st[V * V], top = 0;
     for (int i = 0; i < V; i++) status[i] = 1;
     st[top++] = 0; status[0] = 2;
-    printf("конспект (mark on push): ");
+    printf("notes     (mark on push): ");
     while (top) {
         int n = st[--top];
         printf("%c ", NAME[n]);
@@ -41,7 +41,7 @@ static void dfs_notes(void) {
 static void dfs_mark_on_pop(void) {
     int seen[V] = {0}, st[V * V], top = 0;
     st[top++] = 0;
-    printf("правильно (mark on pop): ");
+    printf("correct   (mark on pop):  ");
     while (top) {
         int n = st[--top];
         if (seen[n]) continue;

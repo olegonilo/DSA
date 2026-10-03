@@ -10,7 +10,7 @@ static int cmp(const void *a, const void *b) {
     return (x > y) - (x < y);
 }
 
-/* Кожен алгоритм × кожен тип входу × розміри, включно з крайовими 0, 1, 2. */
+/* Every algorithm × every input type × sizes, including edge cases 0, 1, 2. */
 static void test_all_sorts_match_reference(void) {
     static const size_t sizes[] = {0, 1, 2, 3, 7, 16, 17, 100, 1000, 4099};
     dsa_rng r;
@@ -22,7 +22,7 @@ static void test_all_sorts_match_reference(void) {
                 int *a = malloc((n ? n : 1) * sizeof *a), *ref = malloc((n ? n : 1) * sizeof *ref);
                 dsa_fill(a, n, (dsa_input_kind)kind, &r);
                 if (dsa_sorts[s].nonneg_only && strcmp(dsa_sorts[s].name, "counting") == 0)
-                    for (size_t i = 0; i < n; i++) a[i] %= 100000; /* counting: k обмежене */
+                    for (size_t i = 0; i < n; i++) a[i] %= 100000; /* counting: k is bounded */
                 memcpy(ref, a, n * sizeof *a);
                 qsort(ref, n, sizeof *ref, cmp);
                 dsa_sorts[s].fn(a, n);
@@ -49,7 +49,7 @@ static void test_negative_keys(void) {
     }
 }
 
-/* Аналітичні значення кількості порівнянь — перевіряємо, що лічильники рахують точно. */
+/* Analytical comparison counts - verify that the counters are exact. */
 static void test_comparison_counts(void) {
     enum { N = 100 };
     int a[N];
@@ -57,36 +57,36 @@ static void test_comparison_counts(void) {
 
     dsa_stats_reset();
     sort_bubble_naive(a, N);
-    CHECK_EQ_INT(g_stats.cmp, N * (N - 1) / 2);   /* наївний bubble: завжди n(n-1)/2 */
+    CHECK_EQ_INT(g_stats.cmp, N * (N - 1) / 2);   /* naive bubble: always n(n-1)/2 */
     CHECK_EQ_INT(g_stats.swap, 0);
 
     dsa_stats_reset();
     sort_bubble(a, N);
-    CHECK_EQ_INT(g_stats.cmp, N - 1);             /* з раннім виходом: best-case n-1 */
+    CHECK_EQ_INT(g_stats.cmp, N - 1);             /* with early exit: best-case n-1 */
 
     dsa_stats_reset();
     sort_selection(a, N);
-    CHECK_EQ_INT(g_stats.cmp, N * (N - 1) / 2);   /* selection: n(n-1)/2 НЕЗАЛЕЖНО від входу */
+    CHECK_EQ_INT(g_stats.cmp, N * (N - 1) / 2);   /* selection: n(n-1)/2 REGARDLESS of input */
 
     dsa_stats_reset();
     sort_insertion(a, N);
-    CHECK_EQ_INT(g_stats.cmp, N - 1);             /* insertion на відсортованому: n-1 */
+    CHECK_EQ_INT(g_stats.cmp, N - 1);             /* insertion on sorted: n-1 */
 
     for (int i = 0; i < N; i++) a[i] = N - i;
     dsa_stats_reset();
     sort_insertion(a, N);
-    CHECK_EQ_INT(g_stats.cmp, N * (N - 1) / 2);   /* на зворотному: n(n-1)/2 */
+    CHECK_EQ_INT(g_stats.cmp, N * (N - 1) / 2);   /* on reversed: n(n-1)/2 */
     CHECK_EQ_INT(g_stats.move, N * (N - 1) / 2);
 
     for (int i = 0; i < N; i++) a[i] = N - i;
     dsa_stats_reset();
     sort_bubble_naive(a, N);
-    CHECK_EQ_INT(g_stats.swap, N * (N - 1) / 2);  /* кількість інверсій зворотного масиву */
+    CHECK_EQ_INT(g_stats.swap, N * (N - 1) / 2);  /* number of inversions of a reversed array */
 
     for (int i = 0; i < N; i++) a[i] = N - i;
     dsa_stats_reset();
     sort_selection(a, N);
-    CHECK(g_stats.swap <= N - 1);                 /* selection: не більше n-1 обмінів */
+    CHECK(g_stats.swap <= N - 1);                 /* selection: at most n-1 swaps */
 }
 
 int main(void) {

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Друкує всі числа з results/*.csv, на які посилається документація (docs/, README.md).
+"""Prints every number from results/*.csv that the documentation (docs/, README.md) refers to.
 
-Використання:  .venv/bin/python scripts/doc_facts.py [каталог_з_csv]
-Після `make bench` порівняйте вивід зі старими значеннями, щоб оновити тексти:
+Usage:  .venv/bin/python scripts/doc_facts.py [csv_dir]
+After `make bench`, diff the output against the old values to update the texts:
   python3 scripts/doc_facts.py /tmp/old > old.txt; python3 scripts/doc_facts.py > new.txt; diff old.txt new.txt
 """
 import csv
@@ -30,7 +30,7 @@ def out(label, v, fmt="{:.2f}"):
 
 
 st = lambda a, inp, n: get("sort_time.csv", "ns_per_elem", algo=a, input=inp, n=n)
-print("## sort_time (нс/елем)")
+print("## sort_time (ns/elem)")
 for a in ("radix_lsd", "counting", "bucket", "merge_topdown", "quick_median3", "heap"):
     out(f"{a} random 4M", st(a, "random", 4194304))
 for a in ("heap", "merge_topdown", "quick_median3", "quick_hoare_mid", "quick_3way", "libc_qsort", "shell_ciura"):
@@ -41,12 +41,12 @@ out("insertion / insertion_binary random 65536", st("insertion", "random", 65536
 out("bucket few_unique 4M", st("bucket", "few_unique", 4194304))
 out("quick_lomuto_last few_unique 16384", st("quick_lomuto_last", "few_unique", 16384))
 out("quick_3way few_unique 16384", st("quick_3way", "few_unique", 16384))
-print("## sort_time: швидший за heap при 2M?")
+print("## sort_time: faster than heap at 2M?")
 h = st("heap", "random", 2097152)
-print("   повільніші за heap:", [r["algo"] for r in rows("sort_time.csv")
+print("   slower than heap:", [r["algo"] for r in rows("sort_time.csv")
                                if r["input"] == "random" and int(r["n"]) == 2097152 and float(r["ns_per_elem"]) > h])
 
-print("## search_time (нс/запит)")
+print("## search_time (ns/query)")
 for n in (16, 1024, 65536, 1048576, 16777216):
     for a in ("linear", "binary", "branchless", "eytzinger", "eytzinger_unclamped", "interpolation"):
         v = get("search_time.csv", "ns_per_query", algo=a, n=n)
@@ -55,12 +55,12 @@ for n in (16, 1024, 65536, 1048576, 16777216):
 out("binary/eytzinger 16M", get("search_time.csv", "ns_per_query", algo="binary", n=16777216)
     / get("search_time.csv", "ns_per_query", algo="eytzinger", n=16777216))
 
-print("## search_ops (детерміновано)")
+print("## search_ops (deterministic)")
 for d in ("arithmetic", "uniform_random", "skewed_x4"):
     for a in ("binary", "interpolation", "jump", "exponential", "ternary"):
         out(f"{a} {d} 2^20 avg/max", get("search_ops.csv", "avg_cmp", algo=a, data=d, n=1048576))
 
-print("## traverse (нс/елем)")
+print("## traverse (ns/elem)")
 for n in (256, 1024, 65536, 1048576, 16777216):
     for l in ("array", "list_sequential", "list_shuffled"):
         out(f"{l} n={n}", get("traverse.csv", "ns_per_elem", layout=l, n=n), "{:.4f}")
@@ -69,7 +69,7 @@ for b in (131072, 262144, 16777216, 33554432, 67108864):
 out("ratio shuffled/array 16M", get("traverse.csv", "ns_per_elem", layout="list_shuffled", n=16777216)
     / get("traverse.csv", "ns_per_elem", layout="array", n=16777216), "{:.0f}")
 
-print("## stack_growth (нс/push)")
+print("## stack_growth (ns/push)")
 for p in ("memcpy_double_x2", "memcpy_linear_+1024"):
     for n in (65536, 1048576):
         out(f"{p} n={n}", get("stack_growth.csv", "ns_per_push", policy=p, n=n), "{:.3f}")
@@ -94,7 +94,7 @@ for r in rows("skiplist.csv"):
         print(f"p={r['p']}: ptr={float(r['pointers_per_node']):.3f} steps={float(r['steps_per_search']):.1f} "
               f"bound={float(r['theory_steps']):.1f} ns={float(r['ns_per_search']):.0f}")
 
-print("## heap_build 2^24 (нс/елем)")
+print("## heap_build 2^24 (ns/elem)")
 for m in ("floyd_build_random", "push_n_times_random", "floyd_build_descending", "push_n_times_descending"):
     out(m, get("heap_build.csv", "ns_per_elem", method=m, n=16777216))
 

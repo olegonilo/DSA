@@ -1,44 +1,44 @@
 # 06. Skip list
 
-Конспект: notebook p.36–40 (PDF p.37–41). Код: [`src/skiplist.c`](../src/skiplist.c). Джерело: W. Pugh,
+The notes: notebook p.36–40 (PDF p.37–41). Code: [`src/skiplist.c`](../src/skiplist.c). Source: W. Pugh,
 *Skip Lists: A Probabilistic Alternative to Balanced Trees*, CACM 33(6), 1990.
 
-## Структура (правильно)
+## Structure (correct)
 
-Skip list — це **відсортований** зв'язний список (рівень 0) плюс ієрархія дедалі розрідженіших
-«експрес-смуг» (рівні 1…L). Кожен вузол отримує висоту випадково: з імовірністю p він піднімається на
-наступний рівень. Конспект пише «built in two layers» (P3-03). Насправді рівнів у середньому log_{1/p} n.
+A skip list is a **sorted** linked list (level 0) plus a hierarchy of increasingly sparse
+"express lanes" (levels 1…L). Each node gets a random height: with probability p it is promoted to
+the next level. The notes say "built in two layers" (P3-03). In fact there are log_{1/p} n levels on average.
 
-Приклад з конспекту — вставка 6, 29, 22, 9, 17, 4 (висоти випадкові, тут для ілюстрації):
-
-```
-рівень 3: H ──────────────────────────────► 22 ──────────────────► ∅
-рівень 2: H ──────────────────► 9 ────────► 22 ──────────────────► ∅
-рівень 1: H ──► 4 ────────────► 9 ────────► 22 ──────────► 29 ───► ∅
-рівень 0: H ──► 4 ──► 6 ──────► 9 ──► 17 ─► 22 ──────────► 29 ───► ∅
-
-Пошук 17: H(3)→22? 22>17 ↓ H(2)→9 ✓ →22? ↓ 9(1)→22? ↓ 9(0)→17 ✓ знайдено
-```
-
-## Псевдокод конспекту не працює
-
-Усі три алгоритми (insert, delete, search) містять один і той самий зіпсований рядок (P3-07):
+Example from the notes — inserting 6, 29, 22, 9, 17, 4 (heights are random, shown here for illustration):
 
 ```
-while a → forward[i] → key forward[i]            ← конспект
+level 3: H ──────────────────────────────► 22 ──────────────────► ∅
+level 2: H ──────────────────► 9 ────────► 22 ──────────────────► ∅
+level 1: H ──► 4 ────────────► 9 ────────► 22 ──────────► 29 ───► ∅
+level 0: H ──► 4 ──► 6 ──────► 9 ──► 17 ─► 22 ──────────► 29 ───► ∅
+
+Search 17: H(3)→22? 22>17 ↓ H(2)→9 ✓ →22? ↓ 9(1)→22? ↓ 9(0)→17 ✓ found
+```
+
+## The notes' pseudocode does not work
+
+All three algorithms (insert, delete, search) contain the same broken line (P3-07):
+
+```
+while a → forward[i] → key forward[i]            ← the notes
 while a → forward[i] → key < key do a := a → forward[i]   ← Pugh 1990
 ```
 
-| ID | Помилка | Наслідок |
+| ID | Error | Consequence |
 |---|---|---|
-| P3-07 | у циклі немає `< key` і просування `a := a→forward[i]` | цикл або не виконується, або нескінченний |
-| P3-11 | цикл перев'язування йде `for i = 0 to level` (змінна `level` не визначена; має бути висота **нового** вузла) | вузол вставляється не на ті рівні |
-| P3-14 | `update[i]→forward[i]→forward[i]` без присвоєння | видалення нічого не видаляє |
-| P3-17 | `a = a→forward[a]` | має бути `forward[0]` |
-| P3-NEW-2 | «level k» у прикладі = кількість клітинок, а в алгоритмі = найвищий індекс | корінь P3-10, P3-11, P3-15: off-by-one |
-| P3-04 | очікувана пам'ять у таблиці — «—» | Θ(n) очікувано: n/(1−p) вказівників |
+| P3-07 | the loop has no `< key` and no advance `a := a→forward[i]` | the loop either never runs or never ends |
+| P3-11 | the relinking loop runs `for i = 0 to level` (variable `level` is undefined; it should be the height of the **new** node) | the node is inserted on the wrong levels |
+| P3-14 | `update[i]→forward[i]→forward[i]` without an assignment | deletion deletes nothing |
+| P3-17 | `a = a→forward[a]` | should be `forward[0]` |
+| P3-NEW-2 | "level k" in the example = number of cells, but in the algorithm = highest index | root cause of P3-10, P3-11, P3-15: off-by-one |
+| P3-04 | expected memory in the table is "—" | Θ(n) expected: n/(1−p) pointers |
 
-Робоча версія (`src/skiplist.c`) використовує одну конвенцію: `level` = кількість рівнів, індекси `0..level-1`:
+The working version (`src/skiplist.c`) uses a single convention: `level` = number of levels, indices `0..level-1`:
 
 ```c
 static skip_node *descend(skiplist *s, int key, skip_node **update) {
@@ -51,30 +51,30 @@ static skip_node *descend(skiplist *s, int key, skip_node **update) {
 }
 ```
 
-## Експеримент: як p впливає на пам'ять і швидкість
+## Experiment: how p affects memory and speed
 
 ![skiplist](../charts/skiplist.png)
 
-`results/skiplist.csv` (n ≈ 2²⁰, 200 000 успішних пошуків):
+`results/skiplist.csv` (n ≈ 2²⁰, 200 000 successful searches):
 
-| p | вказівників на вузол (виміряно) | теорія 1/(1−p) | кроків на пошук | межа Пью L(n)/p + 1/(1−p) + 1 | нс на пошук |
+| p | pointers per node (measured) | theory 1/(1−p) | steps per search | Pugh's bound L(n)/p + 1/(1−p) + 1 | ns per search |
 |---|---|---|---|---|---|
 | 1/2 | 2.001 | 2.000 | 41.4 | 43.0 | 249 |
 | 1/e | 1.583 | 1.582 | 36.1 | 40.3 | 262 |
 | 1/4 | 1.334 | 1.333 | 38.1 | 42.3 | 299 |
 | 1/8 | 1.144 | 1.143 | 47.7 | 55.5 | 400 |
 
-Кількість кроків і вказівників детермінована (фіксований seed) і між прогонами не змінюється. Час — змінюється:
-у трьох прогонах цієї сесії p = 1/2 давав 280 / 262 / 249 нс, p = 1/e — 305 / 251 / 262 нс.
+Step and pointer counts are deterministic (fixed seed) and do not change between runs. Time does:
+in three runs this session p = 1/2 gave 280 / 262 / 249 ns, p = 1/e — 305 / 251 / 262 ns.
 
-Висновки, які дають саме виміри:
+Conclusions supported by the measurements:
 
-1. Пам'ять збігається з теорією до 3-го знака: 1/(1−p).
-2. Кількість кроків не перевищує межі Пью — це **верхня** межа, тому виміри нижче неї.
-3. p = 1/e мінімізує очікувану кількість кроків теоретично, і на вимірі він найкращий за кроками (36.1 проти 41.4).
-   Але **за часом** p = 1/e і p = 1/2 у межах шуму (у різних прогонах вигравав то один, то інший):
-   на 13 % менше кроків не дало стабільного виграшу в часі. Кроки ≠ промахи кешу.
-   Pugh рекомендує p = 1/4 як компроміс «пам'ять/швидкість» — тут він на 33 % економніший за пам'яттю
-   за p = 1/2 і на 7–20 % повільніший (залежно від прогону).
-4. Порівняйте з AVL при тому ж n = 2²⁰ ([08-trees](08-trees.md)): 85 нс на пошук (випадкові ключі).
-   Skip list у ~3 рази повільніший: кожен крок — окремий вузол у випадковому місці пам'яті.
+1. Memory matches theory to 3 decimal places: 1/(1−p).
+2. Step counts do not exceed Pugh's bound — it is an **upper** bound, so measurements fall below it.
+3. p = 1/e minimizes the expected number of steps in theory, and it is also best by steps in the measurement (36.1 vs 41.4).
+   But **by time** p = 1/e and p = 1/2 are within noise (different runs were won by one or the other):
+   13 % fewer steps gave no stable time advantage. Steps ≠ cache misses.
+   Pugh recommends p = 1/4 as a memory/speed compromise — here it uses 33 % less memory
+   than p = 1/2 and is 7–20 % slower (depending on the run).
+4. Compare with AVL at the same n = 2²⁰ ([08-trees](08-trees.md)): 85 ns per search (random keys).
+   The skip list is ~3 times slower: each step is a separate node at a random memory location.

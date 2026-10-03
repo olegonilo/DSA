@@ -1,9 +1,9 @@
-# DSA — збірка без зовнішніх залежностей (тільки C11-компілятор і make).
+# DSA — build with no external dependencies (only a C11 compiler and make).
 #
-#   make test         — юніт-тести під AddressSanitizer + UBSan
-#   make bench        — усі бенчмарки -> results/*.csv
-#   make plots        — графіки results/*.csv -> charts/*.png (потрібен .venv з matplotlib)
-#   make experiments  — демонстрації помилок з конспекту (до/після)
+#   make test         — unit tests under AddressSanitizer + UBSan
+#   make bench        — all benchmarks -> results/*.csv
+#   make plots        — charts results/*.csv -> charts/*.png (requires .venv with matplotlib)
+#   make experiments  — demonstrations of errors in the notes (before/after)
 #   make all          — test + experiments + bench + plots
 
 CC      ?= cc
@@ -27,19 +27,19 @@ build/tests/%: tests/%.c $(SRC) tests/minitest.h
 	@mkdir -p $(@D)
 	$(CC) $(STD) $(SAN) -DDSA_COUNT $< $(SRC) -o $@ $(LDLIBS)
 
-# Бенчмарки часу: БЕЗ лічильників (-DDSA_COUNT не задано), щоб інкременти не спотворювали час.
+# Timing benchmarks: WITHOUT counters (-DDSA_COUNT not set), so the increments do not distort timings.
 build/bench/%: bench/%.c $(SRC) bench/bench_util.h
 	@mkdir -p $(@D)
 	$(CC) $(STD) $(OPT) $< $(SRC) -o $@ $(LDLIBS)
 
-# bench_ops рахує операції — збирається з лічильниками.
+# bench_ops counts operations — built with counters.
 build/bench/bench_ops: bench/bench_ops.c $(SRC) bench/bench_util.h
 	@mkdir -p $(@D)
 	$(CC) $(STD) $(OPT) -DDSA_COUNT $< $(SRC) -o $@ $(LDLIBS)
 
-# Експерименти збираються з -O0, щоб компілятор не "прибрав" демонстровану поведінку,
-# окрім тих, що порівнюють продуктивність (вони самі пишуть, як їх збирати — див. EXP_O2).
-# ex_ub_* відтворюють невизначену поведінку з конспекту — збираються з ASan/UBSan, щоб її ПОБАЧИТИ.
+# Experiments are built with -O0 so the compiler does not "optimize away" the demonstrated behavior,
+# except those that compare performance (they state how they should be built — see EXP_O2).
+# ex_ub_* reproduce undefined behavior from the notes — built with ASan/UBSan so you can SEE it.
 EXP_O2  := build/exp/ex_struct_padding build/exp/ex_realloc_inplace build/exp/ex_small_n_crossover
 build/exp/ex_ub_%: experiments/ex_ub_%.c experiments/exp_util.h
 	@mkdir -p $(@D)

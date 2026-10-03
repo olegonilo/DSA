@@ -1,13 +1,13 @@
-/* exp_util.h — запуск потенційно "падаючого" коду в дочірньому процесі.
- * Батько перехоплює stderr дитини і друкує тільки рядки-діагнози (ASan/UBSan SUMMARY),
- * тож експеримент показує реальну реакцію санітайзера, а не "повірте на слово". */
+/* exp_util.h — runs potentially "crashing" code in a child process.
+ * The parent captures the child's stderr and prints only the diagnostic lines (ASan/UBSan SUMMARY),
+ * so the experiment shows the sanitizer's real response instead of "take my word for it". */
 #ifndef EXP_UTIL_H
 #define EXP_UTIL_H
 
 #ifdef __APPLE__
 #define _DARWIN_C_SOURCE
 #else
-#define _POSIX_C_SOURCE 200809L /* fdopen, strsignal під -std=c11 на glibc */
+#define _POSIX_C_SOURCE 200809L /* fdopen, strsignal under -std=c11 on glibc */
 #endif
 #include <signal.h>
 #include <stdio.h>
@@ -44,9 +44,9 @@ static int run_in_child(const char *label, void (*fn)(void)) {
     int st;
     waitpid(pid, &st, 0);
     if (WIFEXITED(st))
-        printf("   [%s] дочірній процес завершився з кодом %d\n", label, WEXITSTATUS(st));
+        printf("   [%s] child process exited with code %d\n", label, WEXITSTATUS(st));
     else if (WIFSIGNALED(st))
-        printf("   [%s] дочірній процес вбито сигналом %d (%s)\n", label, WTERMSIG(st), strsignal(WTERMSIG(st)));
+        printf("   [%s] child process killed by signal %d (%s)\n", label, WTERMSIG(st), strsignal(WTERMSIG(st)));
     return st;
 }
 

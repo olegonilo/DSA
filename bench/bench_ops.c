@@ -1,6 +1,6 @@
-/* bench_ops — ТОЧНА кількість операцій (порівняння / обміни / переміщення).
- * Збирається з -DDSA_COUNT. На відміну від часу, ці числа детерміновані і не залежать від машини:
- * саме їх описують O/Ω/Θ. Вихід: results/sort_ops.csv, results/search_ops.csv */
+/* bench_ops — EXACT operation counts (comparisons / swaps / moves).
+ * Built with -DDSA_COUNT. Unlike time, these numbers are deterministic and machine-independent:
+ * they are exactly what O/Ω/Θ describe. Output: results/sort_ops.csv, results/search_ops.csv */
 #include "bench_util.h"
 #include "dsa_search.h"
 #include "dsa_sort.h"
@@ -14,7 +14,7 @@ static void sort_ops(void) {
     int *a = xmalloc(maxn * sizeof *a);
     for (size_t s = 0; s < dsa_sorts_count; s++) {
         const dsa_sort_entry *e = &dsa_sorts[s];
-        if (e->nonneg_only) continue; /* не порівняльні: cmp = 0 за визначенням */
+        if (e->nonneg_only) continue; /* non-comparison: cmp = 0 by definition */
         for (size_t kk = 0; kk < sizeof kinds / sizeof *kinds; kk++) {
             for (int lg = 4; lg <= 18; lg++) {
                 size_t n = (size_t)1 << lg;
@@ -41,9 +41,9 @@ static int cmp_int(const void *x, const void *y) {
     return (a > b) - (a < b);
 }
 
-/* Метрика: кожне порівняння ключа з елементом масиву рахується як 1 (C_CMP у src/search.c).
- * Тому binary робить 2 на ітерацію (== і <), interpolation — до 3 на пробу. Усі алгоритми
- * отримують ОДНАКОВИЙ набір ключів для кожного n (раніше вибірка відрізнялась між алгоритмами). */
+/* Metric: each comparison of the key with an array element counts as 1 (C_CMP in src/search.c).
+ * So binary does 2 per iteration (== and <), interpolation up to 3 per probe. All algorithms
+ * get the SAME key set for each n (previously the sample differed between algorithms). */
 static void search_ops(void) {
     FILE *f = open_csv("results/search_ops.csv", "algo,data,n,avg_cmp,max_cmp");
     static const struct { const char *name; search_fn fn; } fns[] = {
@@ -61,12 +61,12 @@ static void search_ops(void) {
             size_t n = (size_t)1 << lg;
             dsa_rng r;
             dsa_rng_seed(&r, 7 + (uint64_t)lg);
-            if (data == 0) {                     /* арифметична прогресія: інтерполяція вгадує з 1 проби */
+            if (data == 0) {                     /* arithmetic progression: interpolation hits on the 1st probe */
                 for (size_t i = 0; i < n; i++) a[i] = (int)(i * 4 + 1);
-            } else if (data == 1) {              /* відсортовані рівномірно-випадкові ключі в [0, 2^31) */
+            } else if (data == 1) {              /* sorted uniformly random keys in [0, 2^31) */
                 for (size_t i = 0; i < n; i++) a[i] = (int)(dsa_rng_next(&r) >> 33);
                 qsort(a, n, sizeof *a, cmp_int);
-            } else {                             /* x^4: щільно зліва, рідко справа */
+            } else {                             /* x^4: dense on the left, sparse on the right */
                 for (size_t i = 0; i < n; i++) a[i] = (int)(pow((double)i / (double)n, 4.0) * 2e9) + (int)i;
             }
             for (int q = 0; q < Q; q++) idx[q] = (size_t)dsa_rng_below(&r, n);
@@ -74,7 +74,7 @@ static void search_ops(void) {
                 if (fns[fi].fn == search_linear && lg > 14) continue;
                 uint64_t total = 0, mx = 0;
                 for (int q = 0; q < Q; q++) {
-                    int key = a[idx[q]];             /* успішні пошуки */
+                    int key = a[idx[q]];             /* successful searches */
                     dsa_stats_reset();
                     if (fns[fi].fn(a, n, key) < 0) { fprintf(stderr, "BUG %s\n", fns[fi].name); exit(1); }
                     total += g_stats.cmp;

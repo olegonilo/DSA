@@ -12,7 +12,7 @@ void stack_init(stack *s) { s->data = NULL; s->size = s->cap = 0; s->reallocs = 
 void stack_free(stack *s) { free(s->data); stack_init(s); }
 
 static int stack_reserve(stack *s, size_t newcap) {
-    /* realloc у тимчасову змінну: при невдачі старий блок не втрачається (інакше — витік) */
+    /* realloc into a temporary: on failure the old block is not lost (otherwise - a leak) */
     int *p = realloc(s->data, newcap * sizeof *p);
     if (!p) return -1;
     s->data = p;
@@ -28,7 +28,7 @@ int stack_push(stack *s, int v) {
 }
 
 int stack_push_grow_linear(stack *s, int v, size_t k) {
-    if (k == 0) return -1; /* ріст на 0 не збільшує буфер — запис був би за межі */
+    if (k == 0) return -1; /* growing by 0 does not enlarge the buffer - the write would be out of bounds */
     if (s->size == s->cap && stack_reserve(s, s->cap + k) != 0) return -1;
     s->data[s->size++] = v;
     return 0;
@@ -85,7 +85,7 @@ int lq_init(lqueue *q, size_t cap) {
 void lq_free(lqueue *q) { free(q->data); q->data = NULL; }
 
 int lq_enqueue(lqueue *q, int v) {
-    if (q->rear == q->cap) return -1; /* "переповнення", навіть якщо спереду є вільні клітинки */
+    if (q->rear == q->cap) return -1; /* "overflow" even if there are free cells at the front */
     q->data[q->rear++] = v;
     return 0;
 }
@@ -109,7 +109,7 @@ void dq_free(deque *d) { free(d->data); d->data = NULL; }
 
 int dq_push_front(deque *d, int v) {
     if (d->count == d->cap) return -1;
-    d->head = (d->head + d->cap - 1) % d->cap; /* +cap: щоб не піти в "мінус" для size_t */
+    d->head = (d->head + d->cap - 1) % d->cap; /* +cap: to avoid going "negative" with size_t */
     d->data[d->head] = v;
     d->count++;
     return 0;
@@ -183,13 +183,13 @@ int infix_to_postfix(const char *in, char *out, size_t outsz) {
         } else if (c == ')') {
             int t;
             for (;;) {
-                if (stack_pop(&ops, &t)) { rc = -1; goto done; } /* зайва ')' */
+                if (stack_pop(&ops, &t)) { rc = -1; goto done; } /* unmatched ')' */
                 if (t == '(') break;
                 EMIT((char)t);
             }
         } else if (prec(c)) {
             int t;
-            /* лівоасоціативні: виштовхуємо ops з prec >= ; правоасоціативний ^: лише з prec > */
+            /* left-associative: pop ops with prec >= ; right-associative ^: only with prec > */
             while (stack_peek(&ops, &t) == 0 && t != '(' &&
                    (prec((char)t) > prec(c) || (prec((char)t) == prec(c) && c != '^'))) {
                 stack_pop(&ops, NULL);
@@ -204,7 +204,7 @@ int infix_to_postfix(const char *in, char *out, size_t outsz) {
     {
         int t;
         while (stack_pop(&ops, &t) == 0) {
-            if (t == '(') { rc = -1; goto done; } /* незакрита '(' */
+            if (t == '(') { rc = -1; goto done; } /* unclosed '(' */
             EMIT((char)t);
         }
     }
@@ -239,8 +239,8 @@ long eval_postfix(const char *postfix, int *err) {
             r = a / b;
             break;
         case '^': {
-            if (b < 0) { *err = -1; return 0; } /* цілочисельний степінь з від'ємним показником не визначений */
-            long base = a;                       /* піднесення квадратуванням: O(log b) множень */
+            if (b < 0) { *err = -1; return 0; } /* integer power with a negative exponent is undefined */
+            long base = a;                       /* exponentiation by squaring: O(log b) multiplications */
             r = 1;
             while (b && !ovf) {
                 if (b & 1) ovf = __builtin_mul_overflow(r, base, &r);
@@ -251,7 +251,7 @@ long eval_postfix(const char *postfix, int *err) {
         }
         default: *err = -1; return 0;
         }
-        if (ovf) { *err = -1; return 0; } /* знакове переповнення — UB, тому перевіряємо явно */
+        if (ovf) { *err = -1; return 0; } /* signed overflow is UB, so check explicitly */
         st[top++] = r;
     }
     if (top != 1) { *err = -1; return 0; }

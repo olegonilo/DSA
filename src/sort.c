@@ -15,12 +15,12 @@
 #define C_MOVE(k) ((void)0)
 #endif
 
-/* LT(x, y): x < y з підрахунком порівняння. */
+/* LT(x, y): x < y, counting the comparison. */
 #define LT(x, y) (C_CMP(), (x) < (y))
 #define GT(x, y) (C_CMP(), (x) > (y))
 
 static inline void swp(int *a, size_t i, size_t j) {
-    if (i == j) return; /* обмін із самим собою — не обмін: не рахуємо і не пишемо */
+    if (i == j) return; /* swapping with itself is not a swap: neither counted nor written */
     C_SWAP();
     int t = a[i]; a[i] = a[j]; a[j] = t;
 }
@@ -35,8 +35,8 @@ void sort_bubble_naive(int *a, size_t n) {
 }
 
 void sort_bubble(int *a, size_t n) {
-    /* Покращення: запам'ятовуємо позицію останнього обміну — все праворуч
-     * від неї вже на місці. Якщо обмінів не було — масив відсортований (best O(n)). */
+    /* Improvement: remember the position of the last swap - everything to its right
+     * is already in place. If there were no swaps, the array is sorted (best O(n)). */
     while (n > 1) {
         size_t last = 0;
         for (size_t j = 1; j < n; j++)
@@ -71,7 +71,7 @@ void sort_insertion(int *a, size_t n) {
 void sort_insertion_binary(int *a, size_t n) {
     for (size_t i = 1; i < n; i++) {
         int key = a[i];
-        size_t lo = 0, hi = i;              /* шукаємо upper_bound(key) у [0, i) — стабільно */
+        size_t lo = 0, hi = i;              /* find upper_bound(key) in [0, i) - stable */
         while (lo < hi) {
             size_t mid = lo + (hi - lo) / 2;
             if (GT(a[mid], key)) hi = mid; else lo = mid + 1;
@@ -102,13 +102,13 @@ static void shell_with_gaps(int *a, size_t n, const size_t *gaps, size_t ng) {
 }
 
 void sort_shell(int *a, size_t n) {
-    /* Ciura (2001) + розширення множенням на 2.25 */
+    /* Ciura (2001) + extension by multiplying by 2.25 */
     size_t gaps[64];
     size_t ng = 0;
     static const size_t ciura[] = {1, 4, 10, 23, 57, 132, 301, 701};
     for (size_t i = 0; i < 8; i++) gaps[ng++] = ciura[i];
     while (gaps[ng - 1] * 9 / 4 < n && ng < 64) { gaps[ng] = gaps[ng - 1] * 9 / 4; ng++; }
-    /* у спадному порядку */
+    /* in descending order */
     for (size_t i = 0; i < ng / 2; i++) { size_t t = gaps[i]; gaps[i] = gaps[ng - 1 - i]; gaps[ng - 1 - i] = t; }
     shell_with_gaps(a, n, gaps, ng);
 }
@@ -123,7 +123,7 @@ void sort_shell_halving(int *a, size_t n) {
 /* ------------------------------------------------------------------ Merge */
 
 static void merge(int *a, int *buf, size_t lo, size_t mid, size_t hi) {
-    /* зливаємо [lo,mid) і [mid,hi); "<=" робить сортування стабільним */
+    /* merge [lo,mid) and [mid,hi); "<=" makes the sort stable */
     size_t i = lo, j = mid, k = lo;
     while (i < mid && j < hi) {
         if (!GT(a[i], a[j])) buf[k++] = a[i++];
@@ -140,7 +140,7 @@ static void merge_rec(int *a, int *buf, size_t lo, size_t hi) {
     size_t mid = lo + (hi - lo) / 2;
     merge_rec(a, buf, lo, mid);
     merge_rec(a, buf, mid, hi);
-    if (!GT(a[mid - 1], a[mid])) return; /* вже впорядковано: best-case O(n) на відсортованому */
+    if (!GT(a[mid - 1], a[mid])) return; /* already ordered: best-case O(n) on sorted input */
     merge(a, buf, lo, mid, hi);
 }
 
@@ -170,7 +170,7 @@ void sort_merge_bottomup(int *a, size_t n) {
 
 /* ------------------------------------------------------------------ Quick */
 
-/* Ломуто, опорний = останній. Класична "підручникова" версія. */
+/* Lomuto, pivot = last. The classic "textbook" version. */
 static void quick_lomuto(int *a, ptrdiff_t lo, ptrdiff_t hi) {
     while (lo < hi) {
         int p = a[hi];
@@ -178,7 +178,7 @@ static void quick_lomuto(int *a, ptrdiff_t lo, ptrdiff_t hi) {
         for (ptrdiff_t j = lo; j < hi; j++)
             if (LT(a[j], p)) { swp(a, (size_t)i, (size_t)j); i++; }
         swp(a, (size_t)i, (size_t)hi);
-        /* рекурсія в меншу частину — глибина стеку O(log n) навіть у worst-case по часу */
+        /* recurse into the smaller part - stack depth O(log n) even in the worst time case */
         if (i - lo < hi - i) { quick_lomuto(a, lo, i - 1); lo = i + 1; }
         else { quick_lomuto(a, i + 1, hi); hi = i - 1; }
     }
@@ -189,8 +189,8 @@ void sort_quick_lomuto_last(int *a, size_t n) {
 }
 
 static size_t hoare_partition(int *a, size_t lo, size_t hi, int p) {
-    /* інваріант Хоара: повертає j, lo <= j < hi, всі [lo..j] <= p <= [j+1..hi] */
-    size_t i = lo - 1, j = hi + 1; /* lo-1 при lo=0 переповнюється до SIZE_MAX і ++ повертає 0 — визначено для unsigned */
+    /* Hoare invariant: returns j, lo <= j < hi, all [lo..j] <= p <= [j+1..hi] */
+    size_t i = lo - 1, j = hi + 1; /* lo-1 with lo=0 wraps to SIZE_MAX and ++ brings it back to 0 - well-defined for unsigned */
     for (;;) {
         do i++; while (LT(a[i], p));
         do j--; while (GT(a[j], p));
@@ -274,7 +274,7 @@ static void sift_down(int *a, size_t i, size_t n) {
 
 void sort_heap(int *a, size_t n) {
     if (n < 2) return;
-    for (size_t i = n / 2; i-- > 0;) sift_down(a, i, n); /* побудова купи: O(n), не O(n log n) */
+    for (size_t i = n / 2; i-- > 0;) sift_down(a, i, n); /* heap construction: O(n), not O(n log n) */
     for (size_t end = n - 1; end > 0; end--) {
         swp(a, 0, end);
         sift_down(a, 0, end);
@@ -287,7 +287,7 @@ void sort_counting(int *a, size_t n) {
     if (n < 2) return;
     int mx = a[0];
     for (size_t i = 0; i < n; i++) {
-        if (a[i] < 0) abort(); /* контракт: тільки невід'ємні ключі (інакше cnt[a[i]] — запис за межі) */
+        if (a[i] < 0) abort(); /* contract: non-negative keys only (otherwise cnt[a[i]] writes out of bounds) */
         if (a[i] > mx) mx = a[i];
     }
     size_t k = (size_t)mx + 1;
@@ -295,8 +295,8 @@ void sort_counting(int *a, size_t n) {
     int *out = malloc(n * sizeof *out);
     if (!cnt || !out) abort();
     for (size_t i = 0; i < n; i++) cnt[a[i]]++;
-    for (size_t v = 1; v < k; v++) cnt[v] += cnt[v - 1];      /* префіксні суми */
-    for (size_t i = n; i-- > 0;) out[--cnt[a[i]]] = a[i];      /* з кінця — стабільно */
+    for (size_t v = 1; v < k; v++) cnt[v] += cnt[v - 1];      /* prefix sums */
+    for (size_t i = n; i-- > 0;) out[--cnt[a[i]]] = a[i];      /* from the end - stable */
     memcpy(a, out, n * sizeof *a);
     C_MOVE(2 * n);
     free(cnt);
@@ -305,7 +305,7 @@ void sort_counting(int *a, size_t n) {
 
 void sort_radix_lsd(int *a, size_t n) {
     if (n < 2) return;
-    for (size_t i = 0; i < n; i++) if (a[i] < 0) abort(); /* контракт: невід'ємні ключі */
+    for (size_t i = 0; i < n; i++) if (a[i] < 0) abort(); /* contract: non-negative keys */
     uint32_t *src = (uint32_t *)a;
     uint32_t *buf = malloc(n * sizeof *buf);
     if (!buf) abort();
@@ -318,15 +318,15 @@ void sort_radix_lsd(int *a, size_t n) {
         C_MOVE(n);
         uint32_t *t = src; src = dst; dst = t;
     }
-    /* 4 проходи (парне число) — результат знову в a */
+    /* 4 passes (an even number) - the result ends up back in a */
     free(buf);
 }
 
 void sort_bucket(int *a, size_t n) {
-    /* Справжній bucket sort (а не counting sort, як у конспекті): n кошиків,
-     * кошик елемента = floor((x - min) * n / (max - min + 1)). Кошики — суцільні
-     * відрізки одного буфера (спочатку рахуємо розміри), тож без malloc на кошик.
-     * Для рівномірного розподілу очікувано O(n); worst-case (все в одному кошику) Θ(n^2). */
+    /* A real bucket sort (not counting sort as in the notes): n buckets,
+     * bucket of an element = floor((x - min) * n / (max - min + 1)). Buckets are contiguous
+     * segments of one buffer (sizes are counted first), so no malloc per bucket.
+     * Expected O(n) for a uniform distribution; worst case (everything in one bucket) Θ(n^2). */
     if (n < 2) return;
     int mn = a[0], mx = a[0];
     for (size_t i = 1; i < n; i++) { if (a[i] < mn) mn = a[i]; if (a[i] > mx) mx = a[i]; }
@@ -356,7 +356,7 @@ void sort_bucket(int *a, size_t n) {
 static int cmp_int(const void *x, const void *y) {
     int a = *(const int *)x, b = *(const int *)y;
     C_CMP();
-    return (a > b) - (a < b); /* а не a - b: різниця може переповнитись (UB) */
+    return (a > b) - (a < b); /* not a - b: the difference can overflow (UB) */
 }
 
 void sort_libc_qsort(int *a, size_t n) { qsort(a, n, sizeof *a, cmp_int); }

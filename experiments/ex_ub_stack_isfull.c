@@ -1,10 +1,10 @@
-/* Конспект, coding question 3 (notebook p.107–108, PDF p.97–98): стек на масиві.
+/* The notes, coding question 3 (notebook p.107–108, PDF p.97–98): array-based stack.
  *     int MAXSIZE = 8; int stack[8]; int top = -1;
- *     int isfull() { if (top == MAXSIZE) return 1; ... }      <- має бути MAXSIZE - 1
- * При top = 7 (стек повний: індекси 0..7) isfull() повертає 0, push робить top = 8 і пише stack[8] —
- * за межами масиву (UB). Також pop() у гілці "stack is empty" не повертає значення, а результат
- * використовується — UB (C11 6.9.1p12).
- * Тут відтворюємо 9 push-ів: у конспекті їх 6, тому баг там "сплячий". */
+ *     int isfull() { if (top == MAXSIZE) return 1; ... }      <- should be MAXSIZE - 1
+ * With top = 7 (stack full: indices 0..7) isfull() returns 0, push sets top = 8 and writes stack[8] —
+ * out of the array's bounds (UB). Also, pop() returns no value in the "stack is empty" branch, yet the result
+ * is used — UB (C11 6.9.1p12).
+ * Here we do 9 pushes: the notes do only 6, so there the bug stays "dormant". */
 #include "exp_util.h"
 
 #define MAXSIZE 8
@@ -26,16 +26,16 @@ static int push(int data) {
 static void nine_pushes(void) {
     top = -1;
     for (int i = 1; i <= 9; i++) push(i * 10);
-    printf("      top після 9 push = %d\n", top);
+    printf("      top after 9 pushes = %d\n", top);
 }
 
 static void run_notes(void) { isfull = isfull_notes; nine_pushes(); }
 static void run_fixed(void) { isfull = isfull_fixed; nine_pushes(); }
 
 int main(void) {
-    puts("1) isfull: top == MAXSIZE (конспект), 9 push у стек на 8 елементів");
-    run_in_child("конспект", run_notes);
-    puts("2) isfull: top == MAXSIZE - 1 (виправлено)");
-    run_in_child("виправлено", run_fixed);
+    puts("1) isfull: top == MAXSIZE (the notes), 9 pushes into an 8-element stack");
+    run_in_child("the notes", run_notes);
+    puts("2) isfull: top == MAXSIZE - 1 (fixed)");
+    run_in_child("fixed", run_fixed);
     return 0;
 }

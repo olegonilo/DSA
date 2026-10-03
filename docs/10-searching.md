@@ -1,24 +1,24 @@
-# 10. Пошук
+# 10. Searching
 
-Конспект: notebook p.71–78 (PDF p.72–79). Код: [`src/search.c`](../src/search.c) (8 алгоритмів).
+Notes: notebook p.71–78 (PDF p.72–79). Code: [`src/search.c`](../src/search.c) (8 algorithms).
 
-## Лінійний пошук: помилки коду конспекту
+## Linear search: errors in the notes' code
 
-| Рядок | Проблема | ID |
+| Line | Problem | ID |
 |---|---|---|
-| `SET POS = 1` | має бути `POS = I`: позиція знайденого елемента, а не константа 1 | P5-01 |
-| `scanf("%d", item);` | немає `&`: scanf пише за адресою, рівною неініціалізованому значенню item, — UB | P5-04 |
+| `SET POS = 1` | should be `POS = I`: the position of the found element, not the constant 1 | P5-01 |
+| `scanf("%d", item);` | missing `&`: scanf writes to the address equal to the uninitialized value of item — UB | P5-04 |
 | `void main ()` | clang: `error: 'main' must return 'int'` | P5-03 |
 
-Покращення: **сторож** (`search_linear_sentinel`). Кладемо ключ у кінець масиву, і в циклі лишається одна
-перевірка (`a[i] != key`) замість двох (`i < n && a[i] != key`).
+Improvement: a **sentinel** (`search_linear_sentinel`). Put the key at the end of the array, and the loop keeps one
+check (`a[i] != key`) instead of two (`i < n && a[i] != key`).
 
-## Бінарний пошук
+## Binary search
 
-### Переповнення `(beg + end) / 2`
+### Overflow in `(beg + end) / 2`
 
-Конспект використовує `MID = (BEG + END)/2` (P5-07). Для `int`-індексів при beg + end > INT_MAX це
-переповнення знакового цілого, тобто UB (C11 6.5p5). `make experiments` → `ex_binary_overflow`:
+The notes use `MID = (BEG + END)/2` (P5-07). For `int` indices with beg + end > INT_MAX this is
+signed integer overflow, i.e. UB (C11 6.5p5). `make experiments` → `ex_binary_overflow`:
 
 ```
            beg            end      (beg+end)/2  beg+(end-beg)/2
@@ -27,77 +27,77 @@
     2147483637     2147483645               -7       2147483641
 ```
 
-Масив з > 2³⁰ int займає > 4 ГБ, і це цілком реальний розмір. Така сама помилка 9 років жила
-в `java.util.Arrays.binarySearch` (J. Bloch, 2006). Реалізація тут використовує `size_t` і напіввідкритий
-інтервал `[lo, hi)`, тож немає ні переповнення, ні `hi = mid − 1` з беззнаковим underflow.
+An array of > 2³⁰ ints takes > 4 GB, which is an entirely realistic size. The same bug lived for 9 years
+in `java.util.Arrays.binarySearch` (J. Bloch, 2006). The implementation here uses `size_t` and a half-open
+interval `[lo, hi)`, so there is neither overflow nor `hi = mid − 1` with unsigned underflow.
 
-### Інші помилки
+### Other errors
 
-- Функцію оголошено як `binarysearch`, а визначено як `Binary search` (пробіл, велика B) — не компілюється (P5-11).
-- Приклад на p.76 дає позицію **7** (з 0), а програма повертає `mid+1` (з 1), тож для того самого масиву надрукує 8 (P5-10).
-- «O(1) space» правильно для ітеративного псевдокоду; рекурсивна C-версія займає Θ(log n) стеку (P5-08).
+- The function is declared as `binarysearch` but defined as `Binary search` (a space, capital B) — does not compile (P5-11).
+- The example on p.76 gives position **7** (0-based), but the program returns `mid+1` (1-based), so for the same array it prints 8 (P5-10).
+- "O(1) space" is correct for the iterative pseudocode; the recursive C version uses Θ(log n) stack (P5-08).
 
-### Кількість порівнянь (точно)
+### Number of comparisons (exact)
 
-`results/search_ops.csv`, n = 2²⁰, успішні пошуки, однакова вибірка з 2000 ключів для всіх алгоритмів (рівномірні випадкові дані, якщо не сказано інше):
+`results/search_ops.csv`, n = 2²⁰, successful searches, the same sample of 2000 keys for all algorithms (uniform random data unless stated otherwise):
 
-| Алгоритм | Середнє | Максимум | Теорія |
+| Algorithm | Average | Maximum | Theory |
 |---|---|---|---|
-| binary | 36.9 | 39 | ≤ 2·(⌊log₂n⌋+1) = 42 (2 порівняння на ітерацію: `==` і `<`) |
-| ternary | 42.5 | 49 | **більше** за binary: log₃n ітерацій, але до 4 порівнянь на ітерацію |
-| exponential | 53.4 | 58 | 2·log₂(pos) + бінарний пошук у діапазоні |
-| jump (√n) | 1 019 | 2 032 | ≈ √n/2 + √n/2 у середньому, ≤ 2√n |
-| interpolation, арифметична прогресія | **2.0** | 2 | вгадує з першої проби (виродний «ідеальний» вхід) |
-| interpolation, рівномірні випадкові | **11.6** | 29 | Θ(log log n) очікувано (до 3 порівнянь на пробу) |
-| interpolation, скошені (x⁴) | **1 746** | 18 101 | worst Θ(n) — гірше за jump |
+| binary | 36.9 | 39 | ≤ 2·(⌊log₂n⌋+1) = 42 (2 comparisons per iteration: `==` and `<`) |
+| ternary | 42.5 | 49 | **more** than binary: log₃n iterations, but up to 4 comparisons per iteration |
+| exponential | 53.4 | 58 | 2·log₂(pos) + binary search within the range |
+| jump (√n) | 1 019 | 2 032 | ≈ √n/2 + √n/2 on average, ≤ 2√n |
+| interpolation, arithmetic progression | **2.0** | 2 | guesses on the first probe (degenerate "ideal" input) |
+| interpolation, uniform random | **11.6** | 29 | Θ(log log n) expected (up to 3 comparisons per probe) |
+| interpolation, skewed (x⁴) | **1 746** | 18 101 | worst Θ(n) — worse than jump |
 
 ![search_ops](../charts/search_ops.png)
 
-**Висновок:** interpolation search добрий на рівномірних даних і катастрофічний на скошених.
-Методологічна примітка: перша версія бенчмарку використовувала a[i] = 2i (арифметичну прогресію), де
-інтерполяція *завжди* влучає з першої проби. Через це вийшли «2 порівняння» і 1.6 нс. Рев'ю це помітило,
-і тепер «рівномірні» означають відсортовані випадкові ключі.
-Ternary search для пошуку в масиві гірший за binary (поширений міф, що «3 частини краще за 2»).
+**Conclusion:** interpolation search is good on uniform data and catastrophic on skewed data.
+Methodological note: the first version of the benchmark used a[i] = 2i (an arithmetic progression), where
+interpolation *always* hits on the first probe. That produced "2 comparisons" and 1.6 ns. The review caught this,
+and "uniform" now means sorted random keys.
+Ternary search is worse than binary for searching an array (a common myth is that "3 parts beat 2").
 
-## Час: однакове O(log n), різна реальність
+## Time: same O(log n), different reality
 
 ![search_time](../charts/search_time.png)
 
-`results/search_time.csv` (нс на пошук, медіана з 5 прогонів по 2²⁰ запитів):
+`results/search_time.csv` (ns per search, median of 5 runs of 2²⁰ queries):
 
-| n (обсяг) | binary | branchless | eytzinger | interpolation |
+| n (size) | binary | branchless | eytzinger | interpolation |
 |---|---|---|---|---|
-| 1 024 (4 КБ) | 13.53 | 5.70 | 6.05 | **16.70** |
-| 65 536 (256 КБ) | 34.72 | 18.08 | 11.96 | 22.83 |
-| 1 048 576 (4 МБ) | 71.78 | 38.17 | 17.51 | 29.60 |
-| 16 777 216 (64 МБ) | 296.9 | 170.4 | 73.53 ⚠ | 66.39 |
+| 1 024 (4 KB) | 13.53 | 5.70 | 6.05 | **16.70** |
+| 65 536 (256 KB) | 34.72 | 18.08 | 11.96 | 22.83 |
+| 1 048 576 (4 MB) | 71.78 | 38.17 | 17.51 | 29.60 |
+| 16 777 216 (64 MB) | 296.9 | 170.4 | 73.53 ⚠ | 66.39 |
 
-⚠ **Eytzinger при 64 МБ нестабільний між прогонами**: за 7 прогонів значення бімодальні — ~50 нс
-(50.1, 49.4, 53.5, 49.5) або ~75 нс (74.3, 73.5, 75.2), тоді як binary і branchless коливаються в межах ±7 %.
-Причину не встановлено (кандидати — розміщення 64-МБ буфера у фізичній пам'яті / TLB, планування на P/E-ядра;
-жоден не перевірено). Тому висновки нижче спираються на n = 2²⁰, де всі прогони збігаються в межах 8 %.
+⚠ **Eytzinger at 64 MB is unstable across runs**: over 7 runs the values are bimodal — ~50 ns
+(50.1, 49.4, 53.5, 49.5) or ~75 ns (74.3, 73.5, 75.2), while binary and branchless vary within ±7 %.
+The cause has not been established (candidates: placement of the 64 MB buffer in physical memory / TLB, scheduling on P/E cores;
+neither has been verified). So the conclusions below rely on n = 2²⁰, where all runs agree within 8 %.
 
-Ключі — відсортовані рівномірно-випадкові int. Interpolation при n = 1024 **повільніший** за binary (16.70 vs 13.53 нс), хоча робить
-менше порівнянь. Ймовірна причина — 64-бітне ділення на кожній пробі (не профільовано окремо).
+Keys are sorted uniform random ints. At n = 1024 interpolation is **slower** than binary (16.70 vs 13.53 ns), even though it makes
+fewer comparisons. The likely cause is a 64-bit division on every probe (not profiled separately).
 
-Спостереження з графіка без пояснення: криві `eytzinger` і `eytzinger_unclamped` мають «пилку» —
-при n = 1.5·2ᵏ пошук стабільно повільніший, ніж при сусідніх n = 2ᵏ (наприклад, 6.05 vs 11.25 нс при n = 1024 і n = 1536).
-Причину не досліджено (кандидат — неповний останній рівень неявного дерева).
+An unexplained observation from the chart: the `eytzinger` and `eytzinger_unclamped` curves have a "sawtooth" —
+at n = 1.5·2ᵏ search is consistently slower than at the neighboring n = 2ᵏ (e.g. 6.05 vs 11.25 ns at n = 1024 and n = 1536).
+The cause has not been investigated (candidate: the incomplete last level of the implicit tree).
 
-Три покращення **без зміни асимптотики**:
+Three improvements **without changing the asymptotics**:
 
-1. **Branchless** (`search_branchless`): фіксована кількість ітерацій, тіло компілюється в `csel`
-   замість умовного переходу. На кожному кроці бінарного пошуку напрям — монетка 50/50, тож передбачувач
-   гілок помиляється приблизно в половині кроків. Виграш ~2×.
-2. **Eytzinger layout**: зміна *структури даних*, а не алгоритму. Масив переставлено в порядку BFS-обходу
-   неявного дерева (діти k — 2k і 2k+1). Перші рівні всіх пошуків лежать поруч, а наступні 4 рівні можна
-   **префетчити** заздалегідь: вони займають суміжний блок. При 4 МБ — у **4.1 раза** швидше за класичний бінарний пошук (17.51 vs 71.78 нс; стабільно в усіх прогонах).
-   При 64 МБ — у 4.0–6.2 раза залежно від прогону (див. ⚠ вище).
-3. **Пастка префетчу** (`eytzinger_unclamped`): префетч `b + 16k` без обмеження йде за межі масиву на
-   ще не відображені сторінки. Результат — 38.1 нс замість 6.05 нс при n = 1024, тобто «оптимізація» робить
-   у 6 разів гірше. Цікаво, що при 64 МБ неклампована версія (58.3 нс) буває швидшою за кламповану в її
-   «повільному» режимі (73.5 нс): там стрибки префетчу виходять за межі масиву лише на останніх рівнях. Обмеження індексу до n виправило це.
+1. **Branchless** (`search_branchless`): a fixed number of iterations; the body compiles to `csel`
+   instead of a conditional jump. At each step of binary search the direction is a 50/50 coin flip, so the branch
+   predictor mispredicts on roughly half the steps. Gain ~2×.
+2. **Eytzinger layout**: a change of *data structure*, not algorithm. The array is rearranged in BFS order
+   of an implicit tree (children of k are 2k and 2k+1). The top levels of all searches sit together, and the next 4 levels can be
+   **prefetched** ahead of time: they occupy a contiguous block. At 4 MB it is **4.1×** faster than classic binary search (17.51 vs 71.78 ns; stable across all runs).
+   At 64 MB it is 4.0–6.2× faster depending on the run (see ⚠ above).
+3. **Prefetch trap** (`eytzinger_unclamped`): an unclamped prefetch of `b + 16k` goes past the end of the array onto
+   not-yet-mapped pages. The result is 38.1 ns instead of 6.05 ns at n = 1024, i.e. the "optimization" makes things
+   6× worse. Interestingly, at 64 MB the unclamped version (58.3 ns) is sometimes faster than the clamped one in its
+   "slow" mode (73.5 ns): there the prefetch jumps leave the array only on the last levels. Clamping the index to n fixed this.
 
-При n = 16 (64 Б) branchless (2.0 нс) у 3 рази швидший за звичайний бінарний (6.4 нс), а лінійний пошук займає
-6.4 нс — стільки ж, скільки бінарний. (На малих n шум між прогонами великий: linear при n = 16 давав від 5.8 до 12.6 нс
-у різних прогонах цієї сесії; branchless — стабільно 2.0–2.3.) На малих n вирішують гілки й константи, а не асимптотика.
+At n = 16 (64 B) branchless (2.0 ns) is 3× faster than plain binary (6.4 ns), and linear search takes
+6.4 ns — the same as binary. (At small n the run-to-run noise is large: linear at n = 16 ranged from 5.8 to 12.6 ns
+across runs in this session; branchless was a stable 2.0–2.3.) At small n, branches and constants decide, not asymptotics.

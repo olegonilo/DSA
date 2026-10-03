@@ -1,23 +1,23 @@
-# 13. Задачі з кодом (coding questions)
+# 13. Coding questions
 
-Конспект: notebook p.104–108 (PDF p.94–98). У цих 5 сторінках 29 зауважень, з них 21 однозначна помилка.
-**Жодна з трьох програм не компілюється в написаному вигляді** (кожна має щонайменше одну помилку категорії compile-error в реєстрі: P6-07/P6-N2, P6-12…P6-21, P6-31).
+Notes: notebook p.104–108 (PDF p.94–98). These 5 pages contain 29 findings, 21 of them unambiguous errors.
+**None of the three programs compiles as written** (each has at least one compile-error category entry in the registry: P6-07/P6-N2, P6-12…P6-21, P6-31).
 
-## Q1. Зарплати менше/більше 3000 (C)
+## Q1. Salaries below/above 3000 (C)
 
 ```c
-#include <windows.h>                          // P6-06: не потрібен і відсутній поза Windows
-int main (int argc, char *argv[]}             // P6-07: '}' замість ')'
+#include <windows.h>                          // P6-06: not needed and unavailable outside Windows
+int main (int argc, char *argv[]}             // P6-07: '}' instead of ')'
 ...
-   {  if (salary [i] < 3000]                  // P6-N2: ']' замість ')'
+   {  if (salary [i] < 3000]                  // P6-N2: ']' instead of ')'
       lcount ++;
      else
-      gcount ++;                              // P6-08: зарплата РІВНО 3000 потрапляє в "more than 3000"
-   printf ("\n There are {%d} employee with   // P6-09: фігурні дужки надрукуються буквально
+      gcount ++;                              // P6-08: a salary of EXACTLY 3000 lands in "more than 3000"
+   printf ("\n There are {%d} employee with   // P6-09: the braces are printed literally
 ```
 
-Також `scanf` не перевіряється (P6-10), а `getchar()` одразу з'їдає залишковий `'\n'`, тож програма не чекає
-натискання Enter (P6-11). Виправлена версія:
+Also, `scanf` is not checked (P6-10), and `getchar()` immediately consumes the leftover `'\n'`, so the program does not wait
+for Enter (P6-11). Fixed version:
 
 ```c
 #include <stdio.h>
@@ -39,37 +39,37 @@ int main(void) {
 }
 ```
 
-## Q2. Двозв'язний список (C++)
+## Q2. Doubly linked list (C++)
 
-clang++ видає ~12 помилок. Головні:
+clang++ reports ~12 errors. The main ones:
 
-| Проблема | ID |
+| Problem | ID |
 |---|---|
-| немає `#include <iostream>` | P6-12 |
-| `class node`, а використовується `Node` | P6-13 |
-| `class Linked list` (з пробілом), `public ;` замість `public:` | P6-15, P6-16 |
-| поля `size`/`head_`, а звертання `size_`/`head`/`tail` | P6-17 |
-| `prepend` без тіла; клас не закрито `};` | P6-19, P6-21 |
-| змінну оголошено `lList`, використовується `llist` | P6-N3 |
+| no `#include <iostream>` | P6-12 |
+| `class node`, but `Node` is used | P6-13 |
+| `class Linked list` (with a space), `public ;` instead of `public:` | P6-15, P6-16 |
+| fields `size`/`head_`, but accessed as `size_`/`head`/`tail` | P6-17 |
+| `prepend` has no body; the class is not closed with `};` | P6-19, P6-21 |
+| variable declared as `lList`, used as `llist` | P6-N3 |
 
-Логічні помилки, які лишаються, навіть коли код уже компілюється:
+Logic errors that remain even once the code compiles:
 
-- `append` **не зсуває `tail_`** (P6-18). Після append(10), append(3), append(1) список виходить `10 → 1`, а вузол 3 втрачено (витік).
-- `resetIterator` обнуляє `tail_` замість `itr` (P6-20). Наступний `append` розіменує NULL.
-- `next`/`previous` у конструкторі `Node` не ініціалізовані (P6-14); немає деструктора (P6-24).
+- `append` **does not advance `tail_`** (P6-18). After append(10), append(3), append(1) the list is `10 → 1`, and node 3 is lost (leaked).
+- `resetIterator` nulls `tail_` instead of `itr` (P6-20). The next `append` dereferences NULL.
+- `next`/`previous` are not initialized in the `Node` constructor (P6-14); there is no destructor (P6-24).
 
-Правильна логіка тих самих операцій мовою C: `dll_push_back`, `dll_push_front`, `dll_unlink` у [`src/list.c`](../src/list.c).
+Correct logic for the same operations in C: `dll_push_back`, `dll_push_front`, `dll_unlink` in [`src/list.c`](../src/list.c).
 
-## Q3. Стек на масиві (C)
+## Q3. Array-based stack (C)
 
-Детально з демонстрацією ASan: [07-stack-queue](07-stack-queue.md#помилки-в-pushpop-конспекту).
+Details with an ASan demonstration: [07-stack-queue](07-stack-queue.md#errors-in-the-notes-pushpop).
 
-| Проблема | ID |
+| Problem | ID |
 |---|---|
-| `isfull`: `top == MAXSIZE` замість `MAXSIZE - 1` → запис `stack[8]` за межі | P6-25 |
-| `int MAXSIZE = 8; int stack[8];` — розмір задано двічі; `const int` у C теж не годиться для розміру глобального масиву (C11 6.6p6), лише `#define` або `enum` | P6-26 |
-| `pop()` не повертає значення в гілці «empty» — UB при використанні результату (C11 6.9.1p12) | P6-27 |
-| `peek()` на порожньому стеку читає `stack[-1]` | P6-29 |
-| `printf("stack empty : %s\n", isempty() "true", "false");` — бракує `?` і `:` | P6-31 |
+| `isfull`: `top == MAXSIZE` instead of `MAXSIZE - 1` → out-of-bounds write to `stack[8]` | P6-25 |
+| `int MAXSIZE = 8; int stack[8];` — the size is specified twice; `const int` in C is not usable as the size of a global array either (C11 6.6p6), only `#define` or `enum` | P6-26 |
+| `pop()` returns no value in the "empty" branch — UB if the result is used (C11 6.9.1p12) | P6-27 |
+| `peek()` on an empty stack reads `stack[-1]` | P6-29 |
+| `printf("stack empty : %s\n", isempty() "true", "false");` — missing `?` and `:` | P6-31 |
 
-Після виправлення синтаксису програма друкує `15 12 1 9 5 3` (верифікатор зібрав і запустив її).
+After fixing the syntax the program prints `15 12 1 9 5 3` (the verifier built and ran it).

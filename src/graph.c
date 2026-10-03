@@ -57,8 +57,8 @@ int bfs_csr(const graph_csr *g, int src, int *order, int *dist) {
     if (!q || !d) { free(q); if (!dist) free(d); return -1; }
     for (int i = 0; i < V; i++) d[i] = -1;
     int head = 0, tail = 0, k = 0;
-    /* позначаємо "відвіданою" ПРИ ДОДАВАННІ в чергу, а не при вилученні —
-     * інакше вершина може потрапити в чергу кілька разів (до E разів). */
+    /* mark as "visited" WHEN ENQUEUED, not when dequeued -
+     * otherwise a vertex can enter the queue several times (up to E times). */
     d[src] = 0;
     q[tail++] = src;
     while (head < tail) {
@@ -75,8 +75,8 @@ int bfs_csr(const graph_csr *g, int src, int *order, int *dist) {
 }
 
 int dfs_csr_iterative(const graph_csr *g, int src, int *order) {
-    /* Стек кадрів (вершина, наступний індекс ребра) — повністю імітує рекурсію,
-     * тому порядок відвідування такий самий, як у рекурсивного DFS. */
+    /* Stack of frames (vertex, next edge index) - mimics recursion exactly,
+     * so the visit order is the same as in recursive DFS. */
     int V = g->V;
     int *st = malloc((size_t)V * sizeof *st);
     size_t *it = malloc((size_t)V * sizeof *it);
@@ -127,7 +127,7 @@ int bfs_matrix(const graph_matrix *g, int src, int *order) {
         int u = q[head++];
         order[k++] = u;
         const unsigned char *row = g->m + (size_t)u * V;
-        for (int v = 0; v < V; v++)               /* Θ(V) на кожну вершину => Θ(V^2) загалом */
+        for (int v = 0; v < V; v++)               /* Θ(V) per vertex => Θ(V^2) total */
             if (row[v] && !seen[v]) { seen[v] = 1; q[tail++] = v; }
     }
     free(q); free(seen);

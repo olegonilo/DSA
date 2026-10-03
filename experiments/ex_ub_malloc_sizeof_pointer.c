@@ -1,9 +1,9 @@
-/* Конспект, notebook p.34 (PDF p.35), вставка у список:
- *     ptr = (struct node *) malloc(sizeof(struct node *)      <- так у конспекті
- * sizeof(struct node *) — розмір ВКАЗІВНИКА (8 байт на 64-біт), а не вузла.
- * Для struct node { int data; struct node *next; } на LP64 sizeof = 16 (4 + 4 padding + 8).
- * Запис ptr->next = ... виходить за межі виділеного блоку — heap-buffer-overflow (UB, C11 J.2).
- * Виправлення: ptr = malloc(sizeof *ptr);  — тип береться з самої змінної, помилитись неможливо. */
+/* The notes, notebook p.34 (PDF p.35), list insertion:
+ *     ptr = (struct node *) malloc(sizeof(struct node *)      <- as written in the notes
+ * sizeof(struct node *) is the size of a POINTER (8 bytes on 64-bit), not of a node.
+ * For struct node { int data; struct node *next; } on LP64 sizeof = 16 (4 + 4 padding + 8).
+ * Writing ptr->next = ... goes past the allocated block — heap-buffer-overflow (UB, C11 J.2).
+ * Fix: ptr = malloc(sizeof *ptr);  — the type comes from the variable itself, so it cannot be wrong. */
 #include "exp_util.h"
 
 #include <stddef.h>
@@ -16,7 +16,7 @@ struct node {
 static void notes_version(void) {
     struct node *ptr = (struct node *)malloc(sizeof(struct node *));
     ptr->data = 10;
-    ptr->next = NULL; /* байти 8..15 — поза блоком з 8 байт */
+    ptr->next = NULL; /* bytes 8..15 are outside the 8-byte block */
     free(ptr);
 }
 
@@ -31,9 +31,9 @@ static void fixed_version(void) {
 int main(void) {
     printf("sizeof(struct node *) = %zu, sizeof(struct node) = %zu, offsetof(next) = %zu\n",
            sizeof(struct node *), sizeof(struct node), offsetof(struct node, next));
-    puts("1) код з конспекту: malloc(sizeof(struct node *))");
-    run_in_child("конспект", notes_version);
-    puts("2) виправлено: malloc(sizeof *ptr)");
-    run_in_child("виправлено", fixed_version);
+    puts("1) code from the notes: malloc(sizeof(struct node *))");
+    run_in_child("the notes", notes_version);
+    puts("2) fixed: malloc(sizeof *ptr)");
+    run_in_child("fixed", fixed_version);
     return 0;
 }

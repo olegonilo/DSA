@@ -1,156 +1,156 @@
-# 11. Сортування
+# 11. Sorting
 
-Конспект: notebook p.78–92 (PDF p.79–93). Код: [`src/sort.c`](../src/sort.c) — 18 алгоритмів.
-У цьому розділі конспекту найбільше помилок: 41 (19 однозначних).
+Notes: notebook p.78–92 (PDF p.79–93). Code: [`src/sort.c`](../src/sort.c) — 18 algorithms.
+This section of the notes has the most errors: 41 (19 unambiguous).
 
-## Зведена таблиця (перевірена вимірами)
+## Summary table (verified by measurement)
 
-| Алгоритм | Best | Average | Worst | Пам'ять | Стабільний | Функція |
+| Algorithm | Best | Average | Worst | Memory | Stable | Function |
 |---|---|---|---|---|---|---|
-| Bubble (з прапорцем) | Θ(n) | Θ(n²) | Θ(n²) | Θ(1) | так | `sort_bubble` |
-| Bubble (без прапорця, як у конспекті) | **Θ(n²)** | Θ(n²) | Θ(n²) | Θ(1) | так | `sort_bubble_naive` |
-| Selection | Θ(n²) | Θ(n²) | Θ(n²) | Θ(1) | ні | `sort_selection` |
-| Insertion | Θ(n) | Θ(n²) | Θ(n²) | Θ(1) | так (з `<`!) | `sort_insertion` |
-| Shell (Ciura) | Θ(n log n) | точна оцінка невідома; виміряно нижче | невідомо | Θ(1) | ні | `sort_shell` |
-| Merge | Θ(n log n)* | Θ(n log n) | Θ(n log n) | Θ(n) | так | `sort_merge` |
-| Quick (Lomuto, pivot = last) | Θ(n log n) | Θ(n log n) | **Θ(n²) на відсортованому** | Θ(log n)** | ні | `sort_quick_lomuto_last` |
-| Quick (median-of-3) | Θ(n log n) | Θ(n log n) | Θ(n²) (рідко) | Θ(log n)** | ні | `sort_quick_median3` |
-| Quick 3-way | **Θ(n)** на однакових | Θ(n log n) | Θ(n²) | Θ(log n)** | ні | `sort_quick_3way` |
-| Heap | Θ(n log n)*** | Θ(n log n) | Θ(n log n) | Θ(1) | ні | `sort_heap` |
-| Counting | Θ(n+k) | Θ(n+k) | Θ(n+k) | Θ(n+k) | так | `sort_counting` |
-| Radix LSD (4×8 біт) | Θ(n) | Θ(n) | Θ(n) | Θ(n) | так | `sort_radix_lsd` |
-| Bucket | Θ(n) | Θ(n) для рівномірних | Θ(n²) | Θ(n) | так | `sort_bucket` |
+| Bubble (with flag) | Θ(n) | Θ(n²) | Θ(n²) | Θ(1) | yes | `sort_bubble` |
+| Bubble (no flag, as in the notes) | **Θ(n²)** | Θ(n²) | Θ(n²) | Θ(1) | yes | `sort_bubble_naive` |
+| Selection | Θ(n²) | Θ(n²) | Θ(n²) | Θ(1) | no | `sort_selection` |
+| Insertion | Θ(n) | Θ(n²) | Θ(n²) | Θ(1) | yes (with `<`!) | `sort_insertion` |
+| Shell (Ciura) | Θ(n log n) | exact bound unknown; measured below | unknown | Θ(1) | no | `sort_shell` |
+| Merge | Θ(n log n)* | Θ(n log n) | Θ(n log n) | Θ(n) | yes | `sort_merge` |
+| Quick (Lomuto, pivot = last) | Θ(n log n) | Θ(n log n) | **Θ(n²) on sorted input** | Θ(log n)** | no | `sort_quick_lomuto_last` |
+| Quick (median-of-3) | Θ(n log n) | Θ(n log n) | Θ(n²) (rare) | Θ(log n)** | no | `sort_quick_median3` |
+| Quick 3-way | **Θ(n)** on equal keys | Θ(n log n) | Θ(n²) | Θ(log n)** | no | `sort_quick_3way` |
+| Heap | Θ(n log n)*** | Θ(n log n) | Θ(n log n) | Θ(1) | no | `sort_heap` |
+| Counting | Θ(n+k) | Θ(n+k) | Θ(n+k) | Θ(n+k) | yes | `sort_counting` |
+| Radix LSD (4×8 bits) | Θ(n) | Θ(n) | Θ(n) | Θ(n) | yes | `sort_radix_lsd` |
+| Bucket | Θ(n) | Θ(n) for uniform | Θ(n²) | Θ(n) | yes | `sort_bucket` |
 
-\* наш `sort_merge` пропускає злиття, якщо `a[mid-1] <= a[mid]`: на відсортованому вході рівно n−1 порівнянь (виміряно 16 383 при n=16 384).
-\*\* за умови рекурсії в **меншу** частину (реалізовано всюди); інакше на worst-case стек Θ(n).
-\*\*\* для різних ключів; на однакових ключах — Θ(n) (P5-37).
+\* our `sort_merge` skips the merge if `a[mid-1] <= a[mid]`: on sorted input exactly n−1 comparisons (measured 16 383 at n=16 384).
+\*\* provided recursion goes into the **smaller** part (implemented everywhere); otherwise the worst-case stack is Θ(n).
+\*\*\* for distinct keys; on equal keys — Θ(n) (P5-37).
 
-## Bubble sort: у конспекті не bubble sort
+## Bubble sort: the notes' bubble sort is not bubble sort
 
-1. **Псевдокод — один прохід** (P5-13). `ex_bubble_variants`: `{10,35,32,13,26}` → `10 32 13 26 35` — НЕ відсортовано.
-2. **C-код порівнює `a[i]` з `a[j]` для j > i** (P5-15): це не сусідні елементи, тобто це *exchange sort*.
-   Масив він сортує правильно, але суперечить власному означенню конспекту («порівнює сусідні»).
-3. **«Best case O(n)»** (P5-14) — тільки з прапорцем раннього виходу, якого немає ні в псевдокоді, ні в коді.
-4. `sizeof(a) / sizeof(a0)` — не компілюється (P5-16).
+1. **The pseudocode is a single pass** (P5-13). `ex_bubble_variants`: `{10,35,32,13,26}` → `10 32 13 26 35` — NOT sorted.
+2. **The C code compares `a[i]` with `a[j]` for j > i** (P5-15): these are not adjacent elements, so this is *exchange sort*.
+   It sorts the array correctly, but contradicts the notes' own definition ("compares adjacent elements").
+3. **"Best case O(n)"** (P5-14) — only with an early-exit flag, which is in neither the pseudocode nor the code.
+4. `sizeof(a) / sizeof(a0)` — does not compile (P5-16).
 
-Виміряно (`ex_bubble_variants`, n = 2000):
+Measured (`ex_bubble_variants`, n = 2000):
 
 ```
-вхід       exchange (конспект)        bubble + прапорець
-           порівнянь   обмінів        порівнянь   обмінів
+input      exchange (the notes)       bubble + flag
+           comparisons swaps          comparisons swaps
 random       1999000    986386          1997404    986386
 sorted       1999000         0             1999         0
 reversed     1999000   1999000          1999000   1999000
 ```
 
-Кількість обмінів однакова (вона дорівнює кількості інверсій). Різниця лише в best case: 1 999 проти 1 999 000.
+The number of swaps is the same (it equals the number of inversions). The only difference is the best case: 1 999 vs 1 999 000.
 
-## Insertion sort: `<=` ламає стабільність і best case
+## Insertion sort: `<=` breaks stability and the best case
 
-Конспект: `while (j>=0 && temp <= a[j])` (P5-47). `ex_insertion_le`:
+The notes: `while (j>=0 && temp <= a[j])` (P5-47). `ex_insertion_le`:
 
 ```
-temp <= a[j] (конспект): (1,#3) (1,#1) (2,#4) (2,#2) (2,#0) -> НЕСТАБІЛЬНО
-temp <  a[j] (виправлено): (1,#1) (1,#3) (2,#0) (2,#2) (2,#4) -> стабільно
+temp <= a[j] (the notes): (1,#3) (1,#1) (2,#4) (2,#2) (2,#0) -> UNSTABLE
+temp <  a[j] (fixed): (1,#1) (1,#3) (2,#0) (2,#2) (2,#4) -> stable
 
-Зсуви на масиві з n однакових ключів:
-       n   <= (конспект)   < (виправлено)
+Shifts on an array of n equal keys:
+       n   <= (the notes)        < (fixed)
    16000       127992000                0   (n(n-1)/2 = 127992000)
 ```
 
-Один символ перетворює best case Θ(n) на worst case Θ(n²) для входу з однакових ключів.
+One character turns the best case Θ(n) into the worst case Θ(n²) for input of equal keys.
 
-## Heap sort: `largest != 1` — нескінченна рекурсія
+## Heap sort: `largest != 1` — infinite recursion
 
-Конспект (p.87, P5-40): `if (largest != 1)` замість `!= i`. Коли вузол i вже більший за дітей,
-`largest == i`. Для i ≠ 1 умова істинна, обмін a[i] з самим собою нічого не змінює, а рекурсія викликається
-з тими самими аргументами. `ex_heapify_bug`:
-
-```
-largest != 1 (конспект): глибина рекурсії перевищила 100000 -> у реальному коді це stack overflow
-largest != i (виправлено): відсортовано, макс. глибина рекурсії = 3: 1 10 23 26 28 43 48
-```
-
-Верифікатор окремо скомпілював код конспекту (з виправленим синтаксисом) і отримав exit 139 (SIGSEGV).
-Крім того, в heap sort конспекту бракує `;` після трьох оголошень і `)` у двох `if` (P5-38, P5-39), у
-`for` стоять коми замість `;` (P5-41), а визначено `heapsort`, викликано `heapSort` (P5-42).
-
-## «Bucket sort» конспекту — це counting sort з переповненням буфера
-
-Код p.83–84 (P5-26, P5-29): `int bucket[max]`, а індексується `0..max`. `ex_ub_counting_bucket` на
-вході з конспекту `{54, 12, 84, 57, 69, 41, 9, 5}`:
+The notes (p.87, P5-40): `if (largest != 1)` instead of `!= i`. When node i is already larger than its children,
+`largest == i`. For i ≠ 1 the condition is true, swapping a[i] with itself changes nothing, and the recursion is called
+with the same arguments. `ex_heapify_bug`:
 
 ```
-1) int bucket[max] (конспект)
+largest != 1 (the notes): recursion depth exceeded 100000 -> in real code this is a stack overflow
+largest != i (fixed): sorted, max recursion depth = 3: 1 10 23 26 28 43 48
+```
+
+The verifier separately compiled the notes' code (with the syntax fixed) and got exit 139 (SIGSEGV).
+In addition, the notes' heap sort is missing `;` after three declarations and `)` in two `if`s (P5-38, P5-39),
+the `for` uses commas instead of `;` (P5-41), and `heapsort` is defined while `heapSort` is called (P5-42).
+
+## The notes' "bucket sort" is counting sort with a buffer overflow
+
+Code on p.83–84 (P5-26, P5-29): `int bucket[max]`, but indexed `0..max`. `ex_ub_counting_bucket` on
+the notes' input `{54, 12, 84, 57, 69, 41, 9, 5}`:
+
+```
+1) int bucket[max] (the notes)
       | runtime error: index 84 out of bounds for type 'int[max]'
       | ERROR: AddressSanitizer: dynamic-stack-buffer-overflow
-   [конспект] дочірній процес вбито сигналом 6 (Abort trap: 6)
-2) int bucket[max + 1] (виправлено)
-      результат: 5 9 12 41 54 57 69 84
+   [the notes] child process killed by signal 6 (Abort trap: 6)
+2) int bucket[max + 1] (fixed)
+      result: 5 9 12 41 54 57 69 84
 ```
 
-Справжній bucket sort — `sort_bucket`: n кошиків за діапазоном, сортування всередині кошика.
-Пам'ять у таблиці конспекту «O(n·k)» (P5-25) неправильна; правильно Θ(n+k). Стабільність «may or may not» (p.81) суперечить
-«YES» у таблиці на p.83 (P5-20): правильно — стабільний, якщо стабільне сортування всередині кошиків.
+A real bucket sort is `sort_bucket`: n buckets by range, sorting within each bucket.
+The memory figure "O(n·k)" in the notes' table (P5-25) is wrong; the correct one is Θ(n+k). Stability "may or may not" (p.81) contradicts
+"YES" in the table on p.83 (P5-20): correct answer — stable if the sort within buckets is stable.
 
-**Слабке місце bucket sort** — нерівномірний розподіл: якщо в один кошик потрапляє Θ(n) *різних* ключів,
-insertion усередині дає Θ(n²). Мій початковий прогноз, що це станеться на вході `few_unique` (8 різних значень),
-вимір **спростував**: 7.2 нс/елем навіть при n = 4M. У кошику всі ключі однакові, а insertion sort на однакових
-ключах (з `>`) не робить жодного зсуву, тож кожен кошик обробляється за лінійний час.
+**Bucket sort's weak spot** is a non-uniform distribution: if Θ(n) *distinct* keys land in one bucket,
+the insertion sort inside it costs Θ(n²). My initial prediction that this would happen on the `few_unique` input (8 distinct values)
+was **refuted** by measurement: 7.2 ns/elem even at n = 4M. All keys in a bucket are equal, and insertion sort on equal
+keys (with `>`) does no shifts, so each bucket is processed in linear time.
 
-## Quicksort: вибір опорного елемента
+## Quicksort: choosing the pivot
 
 ![sort_ops](../charts/sort_ops.png)
 
-`results/sort_ops.csv`, n = 16 384, **відсортований** вхід:
+`results/sort_ops.csv`, n = 16 384, **sorted** input:
 
-| Варіант | Порівнянь | |
+| Variant | Comparisons | |
 |---|---|---|
-| Lomuto, pivot = останній | 134 209 536 | = n(n−1)/2, Θ(n²) |
-| Hoare, pivot = середній | 245 759 | ≈ 1.07·n·log₂n |
+| Lomuto, pivot = last | 134 209 536 | = n(n−1)/2, Θ(n²) |
+| Hoare, pivot = middle | 245 759 | ≈ 1.07·n·log₂n |
 | median-of-3 | 183 292 | ≈ 0.80·n·log₂n |
 
-**Дублікати — друга пастка Lomuto.** Вхід `few_unique` (8 різних значень), n = 16 384: 16 834 336 порівнянь,
-і при кожному подвоєнні n кількість зростає рівно в 4 рази. Аналітика: Lomuto кладе рівні опорному ключі в один бік,
-тому група з m однакових ключів коштує m²/2. При 8 групах по n/8 це 8·(n/8)²/2 = n²/16 = 16 777 216. Виміряно на 0.3 % більше.
-3-way partition (`quick_3way`) на тому ж вході — 4.4 нс/елем проти 241 у Lomuto (`sort_heatmap.png`).
+**Duplicates are Lomuto's second trap.** Input `few_unique` (8 distinct values), n = 16 384: 16 834 336 comparisons,
+and each doubling of n multiplies the count by exactly 4. Analysis: Lomuto puts keys equal to the pivot on one side,
+so a group of m equal keys costs m²/2. With 8 groups of n/8 this is 8·(n/8)²/2 = n²/16 = 16 777 216. Measured: 0.3 % more.
+3-way partition (`quick_3way`) on the same input — 4.4 ns/elem vs 241 for Lomuto (`sort_heatmap.png`).
 
-Підручникова версія з останнім елементом як опорним деградує до Θ(n²) саме на найпоширенішому
-«реальному» вході — уже відсортованому. Рекурсія в меншу частину не змінює час, але обмежує стек до Θ(log n);
-без неї worst case — це ще й Θ(n) кадрів стеку.
+The textbook version with the last element as pivot degrades to Θ(n²) precisely on the most common
+"real-world" input — already sorted. Recursing into the smaller part does not change the time, but bounds the stack to Θ(log n);
+without it the worst case is also Θ(n) stack frames.
 
 ## Merge sort
 
-Код злиття в конспекті **правильний** (верифікатор прогнав його на дублікатах, від'ємних і на одному
-елементі). Але функції `mergeSort` і `main` у конспекті немає (P6-03), а `int LeftArray[n1]` — VLA на стеку:
-VLA опційні в C11 (`__STDC_NO_VLA__`), і для великого n стек переповниться (P6-04).
-`sort_merge` виділяє один буфер на все сортування.
+The merge code in the notes is **correct** (the verifier ran it on duplicates, negatives and on a single
+element). But the notes have no `mergeSort` or `main` functions (P6-03), and `int LeftArray[n1]` is a VLA on the stack:
+VLAs are optional in C11 (`__STDC_NO_VLA__`), and for large n the stack will overflow (P6-04).
+`sort_merge` allocates one buffer for the whole sort.
 
-## Час: що реально швидше
+## Time: what is actually faster
 
 ![sort_time](../charts/sort_time_random.png)
 ![sort_heatmap](../charts/sort_heatmap.png)
 
-Випадкові int, n = 4 194 304 (`results/sort_time.csv`):
+Random ints, n = 4 194 304 (`results/sort_time.csv`):
 
-| Алгоритм | нс/елемент |
+| Algorithm | ns/element |
 |---|---|
-| counting (ключі в [0, n)) | 5.1 |
-| radix_lsd (ключі в [0, n)) | 5.2 |
+| counting (keys in [0, n)) | 5.1 |
+| radix_lsd (keys in [0, n)) | 5.2 |
 | bucket | 23.6 |
 | merge_topdown | 40.3 |
 | quick_median3 | 47.5 |
 | heap | 51.8 |
 
-Неочевидні виміряні факти:
+Non-obvious measured facts:
 
-- `heap` робить ~1.8·n·log₂n порівнянь проти ~0.96·n·log₂n у merge і при n ≥ 2M повільніший за merge і
-  median-of-3 (45.3 проти 38.7 і 44.2 нс/елем при n = 2M). Водночас він швидший за `quick_hoare_mid`, `quick_3way`,
-  `quick_lomuto_last`, `libc_qsort` і Shell.
-- Shell (Ciura): локальний показник степеня кількості порівнянь log₂(cmp(2n)/cmp(n)) за `sort_ops.csv`
-  спадає від 1.32 (n = 16→32) до 1.10 (n = 128K→256K). Це поведінка, близька до n log n, а не до n^1.25.
-  При цьому за часом Shell найповільніший з субквадратичних (77.2 нс/елем при n = 2M).
-- `libc_qsort` повільніший за наші реалізації (50.5 vs 34.0 нс/елем у quick_median3 при n = 65 536): виклик
-  компаратора через вказівник на функцію на кожному порівнянні не інлайниться.
-- `insertion_binary` робить у 323 рази менше порівнянь, ніж `insertion` (206 660 vs 66 749 931 при n = 16 384), але
-  переміщень стільки ж (66 733 552). Тому він лише у 5.9 раза швидший (`memmove` швидкий), а не в 323.
+- `heap` makes ~1.8·n·log₂n comparisons vs ~0.96·n·log₂n for merge, and at n ≥ 2M it is slower than merge and
+  median-of-3 (45.3 vs 38.7 and 44.2 ns/elem at n = 2M). At the same time it is faster than `quick_hoare_mid`, `quick_3way`,
+  `quick_lomuto_last`, `libc_qsort` and Shell.
+- Shell (Ciura): the local exponent of the comparison count log₂(cmp(2n)/cmp(n)) from `sort_ops.csv`
+  falls from 1.32 (n = 16→32) to 1.10 (n = 128K→256K). This behavior is close to n log n, not n^1.25.
+  Yet in time Shell is the slowest of the subquadratic sorts (77.2 ns/elem at n = 2M).
+- `libc_qsort` is slower than our implementations (50.5 vs 34.0 ns/elem for quick_median3 at n = 65 536): the
+  comparator call through a function pointer on every comparison is not inlined.
+- `insertion_binary` makes 323× fewer comparisons than `insertion` (206 660 vs 66 749 931 at n = 16 384), but
+  the same number of moves (66 733 552). So it is only 5.9× faster (`memmove` is fast), not 323×.

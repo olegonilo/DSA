@@ -1,9 +1,9 @@
-/* Де Θ(n²) insertion sort перестає бути швидшим за Θ(n log n)?
- * Асимптотика відповіді не дає — тільки вимір. Тому реальні гібридні сортування (introsort, Timsort,
- * наш quick_median3) перемикаються на insertion для малих підмасивів.
- * Метод: масив з 2^18 випадкових int ріжемо на шматки по n і сортуємо кожен; медіана з 7 повторів.
- * merge_topdown викликає malloc/free на кожен шматок — це вартість, а не алгоритм; тому поруч
- * merge_prealloc з одним буфером на весь експеримент (зауваження рев'ю). */
+/* Where does Θ(n²) insertion sort stop being faster than Θ(n log n)?
+ * Asymptotics cannot answer this — only measurement can. That is why real hybrid sorts (introsort, Timsort,
+ * our quick_median3) switch to insertion sort for small subarrays.
+ * Method: an array of 2^18 random ints is cut into chunks of n and each chunk is sorted; median of 7 runs.
+ * merge_topdown calls malloc/free for every chunk — that is an overhead, not the algorithm; hence, alongside it,
+ * merge_prealloc with a single buffer for the whole experiment (a code-review remark). */
 #include "dsa_common.h"
 #include "dsa_sort.h"
 
@@ -32,7 +32,7 @@ int main(void) {
         {"heap", sort_heap}, {"quick_hoare_mid", sort_quick_hoare_mid}};
     printf("%6s", "n");
     for (int k = 0; k < 5; k++) printf(" %16s", algs[k].name);
-    printf("   (нс на елемент)\n");
+    printf("   (ns per element)\n");
     for (size_t n = 4; n <= 512; n *= 2) {
         printf("%6zu", n);
         for (int k = 0; k < 5; k++) {

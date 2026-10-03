@@ -1,12 +1,12 @@
-/* Конспект, "bucket sort" (notebook p.83–84, PDF p.84–85):
+/* The notes, "bucket sort" (notebook p.83–84, PDF p.84–85):
  *     int max = getmax(a, n);
  *     int bucket[max], i;
- *     for (int i = 0; i <= max; i++) bucket[i] = 0;     <- bucket[max] — за межами (розмір max)
- * Дві помилки:
- *   (1) масив має max+1 клітинку (значення 0..max), а оголошено max -> stack-buffer-overflow;
- *   (2) алгоритм — це counting sort (лічильники значень), а не bucket sort (кошики-діапазони
- *       + сортування всередині кошика). Справжній bucket sort: src/sort.c, sort_bucket().
- * Вхід — точно з конспекту: {54, 12, 84, 57, 69, 41, 9, 5}. */
+ *     for (int i = 0; i <= max; i++) bucket[i] = 0;     <- bucket[max] is out of bounds (size max)
+ * Two errors:
+ *   (1) the array needs max+1 cells (values 0..max), but is declared with max -> stack-buffer-overflow;
+ *   (2) the algorithm is counting sort (per-value counters), not bucket sort (range buckets
+ *       + sorting inside each bucket). A real bucket sort: src/sort.c, sort_bucket().
+ * Input — exactly from the notes: {54, 12, 84, 57, 69, 41, 9, 5}. */
 #include "exp_util.h"
 
 static int getmax(const int a[], int n) {
@@ -18,7 +18,7 @@ static int getmax(const int a[], int n) {
 
 static void notes_counting(int a[], int n) {
     int max = getmax(a, n);
-    int bucket[max]; /* VLA розміру max: допустимі індекси 0..max-1 */
+    int bucket[max]; /* VLA of size max: valid indices 0..max-1 */
     for (int i = 0; i <= max; i++) bucket[i] = 0;
     for (int i = 0; i < n; i++) bucket[a[i]]++;
     for (int i = 0, j = 0; i <= max; i++)
@@ -37,7 +37,7 @@ static void fixed_counting(int a[], int n) {
 static void run(void (*f)(int[], int)) {
     int a[] = {54, 12, 84, 57, 69, 41, 9, 5};
     f(a, 8);
-    printf("      результат:");
+    printf("      result:");
     for (int i = 0; i < 8; i++) printf(" %d", a[i]);
     printf("\n");
 }
@@ -45,9 +45,9 @@ static void run_notes(void) { run(notes_counting); }
 static void run_fixed(void) { run(fixed_counting); }
 
 int main(void) {
-    puts("1) int bucket[max] (конспект)");
-    run_in_child("конспект", run_notes);
-    puts("2) int bucket[max + 1] (виправлено)");
-    run_in_child("виправлено", run_fixed);
+    puts("1) int bucket[max] (the notes)");
+    run_in_child("the notes", run_notes);
+    puts("2) int bucket[max + 1] (fixed)");
+    run_in_child("fixed", run_fixed);
     return 0;
 }

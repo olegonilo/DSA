@@ -1,9 +1,9 @@
-/* bench_util.h — методика вимірювання.
+/* bench_util.h — measurement methodology.
  *
- *  - час: CLOCK_MONOTONIC, медіана з R повторів (медіана стійка до викидів від планувальника ОС);
- *  - перед кожним повтором вхід відновлюється з еталонної копії (сортування in-place);
- *  - результат "використовується" через volatile sink, щоб компілятор не викинув обчислення;
- *  - кожен бенчмарк пише CSV у results/ — графіки будуються ТІЛЬКИ з цих файлів.
+ *  - time: CLOCK_MONOTONIC, median of R repetitions (the median is robust to OS-scheduler outliers);
+ *  - before each repetition the input is restored from a reference copy (sorting is in place);
+ *  - the result is "used" via a volatile sink so the compiler cannot eliminate the computation;
+ *  - every benchmark writes CSV into results/ - charts are built ONLY from these files.
  */
 #ifndef BENCH_UTIL_H
 #define BENCH_UTIL_H

@@ -1,0 +1,11 @@
+-std=c11
+-Wall
+-Wextra
+-Wpedantic
+-Wshadow
+-Wconversion
+-Wno-sign-conversion
+-Iinclude
+-Itests
+-Ibench
+-Iexperiments

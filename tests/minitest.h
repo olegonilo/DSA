@@ -1,4 +1,4 @@
-/* minitest.h — мінімальний тест-фреймворк: CHECK не зупиняє тест, TEST_MAIN друкує підсумок. */
+/* minitest.h — minimal test framework: CHECK does not stop the test, TEST_MAIN prints a summary. */
 #ifndef MINITEST_H
 #define MINITEST_H
 

@@ -1,110 +1,110 @@
-# 07. Стек і черга
+# 07. Stack and queue
 
-Конспект: notebook p.41–47 (PDF p.42–48) + coding question 3 (notebook p.107–108).
-Код: [`src/stack_queue.c`](../src/stack_queue.c).
+The notes: notebook p.41–47 (PDF p.42–48) + coding question 3 (notebook p.107–108).
+Code: [`src/stack_queue.c`](../src/stack_queue.c).
 
-## Стек (LIFO)
+## Stack (LIFO)
 
-| Операція | Складність | Примітка |
+| Operation | Complexity | Note |
 |---|---|---|
-| push | Θ(1) амортизовано | при рості ×2; при рості +K — Θ(n/K) амортизовано, див. експеримент |
-| pop / peek | Θ(1) | `peek` повертає **верхній** елемент; конспект: «element at a given position» (P3-19) — це `peep(i)` |
+| push | Θ(1) amortized | with ×2 growth; with +K growth — Θ(n/K) amortized, see the experiment |
+| pop / peek | Θ(1) | `peek` returns the **top** element; the notes: "element at a given position" (P3-19) — that is `peep(i)` |
 | isEmpty / isFull | Θ(1) | |
 
-### Помилки в push/pop конспекту
+### Errors in the notes' push/pop
 
-Псевдокод p.43 (P3-24, P3-25):
+Pseudocode on p.43 (P3-24, P3-25):
 
 ```
-if top = n then stack full        ← після повідомлення виконання ПРОДОВЖУЄТЬСЯ
+if top = n then stack full        ← after the message, execution CONTINUES
 top = top + 1
-stack(top) := item                ← запис за межі
+stack(top) := item                ← out-of-bounds write
 ```
 
-Перевірка межі має **завершувати** операцію. Крім того, тест `top = n` суперечить конвенції «порожній ⇔ top = −1»
-з тієї ж сторінки: для індексів 0..n−1 повний ⇔ `top = n − 1`.
+The bounds check must **terminate** the operation. Moreover, the test `top = n` contradicts the convention "empty ⇔ top = −1"
+on the same page: for indices 0..n−1, full ⇔ `top = n − 1`.
 
-Той самий off-by-one — у C-коді coding question 3 (P6-25):
+The same off-by-one appears in the C code of coding question 3 (P6-25):
 
 ```c
 int MAXSIZE = 8; int stack[8]; int top = -1;
-int isfull() { if (top == MAXSIZE) return 1; else return 0; }   // має бути MAXSIZE - 1
+int isfull() { if (top == MAXSIZE) return 1; else return 0; }   // should be MAXSIZE - 1
 ```
 
-`make experiments` → `ex_ub_stack_isfull` (9 push у стек на 8):
+`make experiments` → `ex_ub_stack_isfull` (9 pushes onto a stack of 8):
 
 ```
-1) isfull: top == MAXSIZE (конспект), 9 push у стек на 8 елементів
+1) isfull: top == MAXSIZE (the notes), 9 pushes into an 8-element stack
       | runtime error: index 8 out of bounds for type 'int[8]'
       | ERROR: AddressSanitizer: global-buffer-overflow
       | 0x… is located 0 bytes after global variable 'stack_' … of size 32
-   [конспект] дочірній процес вбито сигналом 6 (Abort trap: 6)
-2) isfull: top == MAXSIZE - 1 (виправлено)
+   [the notes] child process killed by signal 6 (Abort trap: 6)
+2) isfull: top == MAXSIZE - 1 (fixed)
       could not insert data, stack is full
-      top після 9 push = 7
+      top after 9 pushes = 7
 ```
 
-У самому конспекті push лише 6, тому баг «спить», а помилку не видно. Там же: `pop()` у гілці
-«stack is empty» не повертає значення (P6-27, UB при використанні результату), останній `printf`
-не компілюється — бракує `?` і `:` (P6-31).
+The notes themselves push only 6 times, so the bug "sleeps" and the error is not visible. Also there: `pop()` in the
+"stack is empty" branch returns no value (P6-27, UB if the result is used), and the last `printf`
+does not compile — it is missing `?` and `:` (P6-31).
 
-### Експеримент: стратегія росту динамічного масиву
+### Experiment: dynamic array growth strategy
 
 ![stack_growth](../charts/stack_growth.png)
 
-| Стратегія (явний `malloc+memcpy`) | n = 2¹⁶ | n = 2²⁰ | скопійовано елементів при n = 2²⁰ |
+| Strategy (explicit `malloc+memcpy`) | n = 2¹⁶ | n = 2²⁰ | elements copied at n = 2²⁰ |
 |---|---|---|---|
-| ×2 | 0.31 нс/push | 0.31 нс/push | 1 048 568 (< n) |
-| +1024 | 1.87 нс/push | **28.0 нс/push** | 536 346 624 (≈ n²/2048) |
+| ×2 | 0.31 ns/push | 0.31 ns/push | 1 048 568 (< n) |
+| +1024 | 1.87 ns/push | **28.0 ns/push** | 536 346 624 (≈ n²/2048) |
 
-Теорія підтверджена: при рості ×2 сумарне копіювання < n (геометрична прогресія), тобто push — Θ(1)
-амортизовано. При рості +K копіюється Θ(n²/K), тож час на push росте лінійно з n.
+Theory confirmed: with ×2 growth the total copying is < n (geometric series), so push is Θ(1)
+amortized. With +K growth Θ(n²/K) elements are copied, so the time per push grows linearly with n.
 
-**Але з `realloc` на macOS** (права панель) обидві стратегії дають рівну лінію. Причина виміряна, а не вгадана
-(`ex_realloc_inplace`): великі блоки розширюються *на місці*, без копіювання:
+**But with `realloc` on macOS** (right panel) both strategies give a flat line. The cause was measured, not guessed
+(`ex_realloc_inplace`): large blocks are extended *in place*, without copying:
 
 ```
- розмір  realloc    час realloc   malloc+memcpy того ж розміру
-  64 МБ  на місці      12.7 мкс                   9381.2 мкс
- 256 МБ  на місці       6.1 мкс                  24835.1 мкс
+   size  realloc    realloc time   malloc+memcpy of the same size
+  64 MB  in place      12.7 µs                   9381.2 µs
+ 256 MB  in place       6.1 µs                  24835.1 µs
 ```
 
-Висновок: «+K дає Θ(n²)» — властивість *моделі пам'яті*, а не закон природи. Подвоєння правильне
-завжди. Покладатися на поведінку `realloc` конкретного аллокатора — ні.
+Conclusion: "+K gives Θ(n²)" is a property of the *memory model*, not a law of nature. Doubling is always
+correct. Relying on the behavior of a particular allocator's `realloc` is not.
 
-### Застосування стеку (реалізовано й протестовано)
+### Stack applications (implemented and tested)
 
 - `balanced_brackets("{[()()]}")` → 1; `"([)]"` → 0.
-- `infix_to_postfix` (сортувальна станція Дейкстри) з правильною асоціативністю: `a-b-c` → `ab-c-`
-  (лівоасоціативний), `a^b^c` → `abc^^` (правоасоціативний). Перевірено: `2^3^2` = 512, а не 64.
+- `infix_to_postfix` (Dijkstra's shunting-yard) with correct associativity: `a-b-c` → `ab-c-`
+  (left-associative), `a^b^c` → `abc^^` (right-associative). Verified: `2^3^2` = 512, not 64.
 - `eval_postfix("231*+9-")` = −4.
 
-## Черга (FIFO)
+## Queue (FIFO)
 
-### Лінійна черга марнує місце
+### A linear queue wastes space
 
 ```
 cap = 3: enqueue 1,2,3 → [1 2 3] front=0 rear=3
 dequeue ×2            → [· · 3] front=2 rear=3
-enqueue 4             → OVERFLOW, хоча 2 клітинки вільні      (тест: lq_enqueue → -1)
+enqueue 4             → OVERFLOW, although 2 cells are free      (test: lq_enqueue → -1)
 ```
 
-Конспект називає недоліком лінійної черги те, що «вставка лише з rear» (P3-28). Але це *визначення* черги.
-Справжній недолік — хибне переповнення, показане вище.
+The notes name "insertion only at rear" as the drawback of a linear queue (P3-28). But that is the *definition* of a queue.
+The real drawback is the false overflow shown above.
 
-### Кільцева черга
+### Circular queue
 
-Індекс має **загортатися**: `rear = (rear + 1) % cap` (конспект: «simply incrementing rear», P3-29).
-Реалізація `cqueue` зберігає `count` замість «залишити одну клітинку порожньою» — тоді корисні всі `cap` клітинок
-(тест: черга на 3 приймає рівно 3).
+The index must **wrap around**: `rear = (rear + 1) % cap` (the notes: "simply incrementing rear", P3-29).
+The `cqueue` implementation stores `count` instead of "leaving one cell empty", so all `cap` cells are usable
+(test: a queue of 3 accepts exactly 3).
 
-### Помилки на діаграмах черги (p.45–47)
+### Errors in the queue diagrams (p.45–47)
 
-- Rear показано під 20 замість 30 (P3-27).
-- «front increases from −1 to 0» після видалення (P3-31). Насправді з 0 до 1, і це видно на власному малюнку конспекту.
-- «Go to step [END OF IF]» — номер кроку пропущено (P3-32).
+- Rear is shown under 20 instead of 30 (P3-27).
+- "front increases from −1 to 0" after deletion (P3-31). In fact it goes from 0 to 1, as the notes' own drawing shows.
+- "Go to step [END OF IF]" — the step number is missing (P3-32).
 
-### Пріоритетна черга
+### Priority queue
 
-Ефективна реалізація — бінарна купа: `heap_push`/`heap_pop` за Θ(log n) (див. [08-trees](08-trees.md#бінарна-купа)).
-Інтерв'ю-відповідь Q5 «потрібні дві черги» (P6-34) — фольклор: купі черги не потрібні взагалі.
+The efficient implementation is a binary heap: `heap_push`/`heap_pop` in Θ(log n) (see [08-trees](08-trees.md#binary-heap)).
+Interview answer Q5 "two queues are needed" (P6-34) is folklore: a heap needs no queues at all.

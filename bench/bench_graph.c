@@ -1,13 +1,13 @@
-/* bench_graph — BFS на матриці суміжності vs списку суміжності (CSR).
- *  1) розріджений граф (середній степінь 8), V росте: матриця Θ(V^2), CSR Θ(V+E);
- *  2) фіксоване V = 4096, щільність росте: точка, де матриця наздоганяє CSR.
- * Вихід: results/graph_bfs.csv, results/graph_density.csv */
+/* bench_graph — BFS on an adjacency matrix vs an adjacency list (CSR).
+ *  1) sparse graph (average degree 8), growing V: matrix Θ(V^2), CSR Θ(V+E);
+ *  2) fixed V = 4096, growing density: the point where the matrix catches up with CSR.
+ * Output: results/graph_bfs.csv, results/graph_density.csv */
 #include "bench_util.h"
 #include "dsa_graph.h"
 
-/* Простий неорієнтований граф: ланцюжок 0-1-...-(V-1) (зв'язність) + випадкові РІЗНІ ребра без петель.
- * Перша версія допускала дублікати й петлі: CSR зберігав дублікати, а матриця — ні, тож CSR
- * мав до 1.58× більше дуг, ніж матриця (знайдено на рев'ю). Тепер дублікати відкидаються через бітову матрицю. */
+/* Simple undirected graph: chain 0-1-...-(V-1) (connectivity) + random DISTINCT edges without self-loops.
+ * The first version allowed duplicates and self-loops: CSR kept duplicates but the matrix did not, so CSR
+ * had up to 1.58× more arcs than the matrix (found in review). Duplicates are now rejected via a bit matrix. */
 static edge *random_edges(int V, size_t *ne_inout, dsa_rng *r) {
     size_t maxe = (size_t)V * (size_t)(V - 1) / 2, ne = *ne_inout < maxe ? *ne_inout : maxe;
     edge *es = xmalloc((ne ? ne : 1) * sizeof *es);
@@ -18,7 +18,7 @@ static edge *random_edges(int V, size_t *ne_inout, dsa_rng *r) {
         es[k].u = v; es[k].v = v + 1; k++;
         seen[(size_t)v * V + v + 1] = seen[(size_t)(v + 1) * V + v] = 1;
     }
-    if (ne * 4 > maxe * 3) {  /* дуже щільно: перебираємо всі пари і беремо кожну з імовірністю */
+    if (ne * 4 > maxe * 3) {  /* very dense: enumerate all pairs and take each with probability */
         for (int u = 0; u < V && k < ne; u++)
             for (int v = u + 1; v < V && k < ne; v++)
                 if (!seen[(size_t)u * V + v] && dsa_rng_below(r, maxe) < ne) { es[k].u = u; es[k].v = v; k++; }
@@ -69,7 +69,7 @@ int main(void) {
     fclose(f);
     f = open_csv("results/graph_density.csv", "graph,V,E,ns_csr,ns_matrix,bytes_csr,bytes_matrix");
     const int V = 4096;
-    for (size_t deg = 2; deg <= 4096; deg *= 2) measure(f, "V4096", V, (size_t)V * deg / 2, &r); /* deg 4096 → повний граф */
+    for (size_t deg = 2; deg <= 4096; deg *= 2) measure(f, "V4096", V, (size_t)V * deg / 2, &r); /* deg 4096 → complete graph */
     fclose(f);
     puts("  graph done");
     return 0;

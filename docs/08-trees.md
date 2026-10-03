@@ -1,38 +1,38 @@
-# 08. Дерева: терміни, бінарні дерева, BST, AVL, B/B+, купа
+# 08. Trees: terminology, binary trees, BST, AVL, B/B+, heap
 
-Конспект: notebook p.48–62 (PDF p.49–63). Код: [`src/tree.c`](../src/tree.c).
+The notes: notebook p.48–62 (PDF p.49–63). Code: [`src/tree.c`](../src/tree.c).
 
-## Терміни — виправлення
+## Terminology — corrections
 
-| Термін | Конспект | Правильно |
+| Term | The notes | Correct |
 |---|---|---|
-| child | «descendant of any node» (P3-33) | **безпосередній** нащадок |
-| descendant | «immediate successor» (P3-36) | будь-який вузол у піддереві (дитина, онук, …) |
-| leaf | «bottom-most node» (P3-34) | вузол без дітей (може бути не на останньому рівні) |
-| вхідні ребра | «at least one incoming link» (P3-37) | **рівно одне** для кожного не-кореня ⇒ n−1 ребер |
-| ancestors | «1, 2, 5 are ancestors of node 10» (P3-35) | на малюнку немає вузла 10, а 5 — лист |
+| child | "descendant of any node" (P3-33) | **immediate** descendant |
+| descendant | "immediate successor" (P3-36) | any node in the subtree (child, grandchild, …) |
+| leaf | "bottom-most node" (P3-34) | a node with no children (may not be on the last level) |
+| incoming edges | "at least one incoming link" (P3-37) | **exactly one** for every non-root ⇒ n−1 edges |
+| ancestors | "1, 2, 5 are ancestors of node 10" (P3-35) | the drawing has no node 10, and 5 is a leaf |
 
-## Висота: дві конвенції, і конспект їх змішує
+## Height: two conventions, and the notes mix them
 
-Висоту можна рахувати в **ребрах** (h(лист) = 0) або в **рівнях** (h(лист) = 1). Нижче всі формули
-наведено в ребрах, як у більшості формул конспекту:
+Height can be counted in **edges** (h(leaf) = 0) or in **levels** (h(leaf) = 1). All formulas below
+are given in edges, as in most of the notes' formulas:
 
-| Величина | Конспект | Правильно (h — у ребрах) |
+| Quantity | The notes | Correct (h in edges) |
 |---|---|---|
-| макс. вузлів бінарного дерева | 2^(h+1) − 1 | 2^(h+1) − 1 ✓ |
-| мін. висота для n вузлів | log₂(n+1) − 1 (P3-44) | **⌈log₂(n+1)⌉ − 1**: для n=4 формула конспекту дає 1.32, а висота ціла (2) |
-| full BT: мін. вузлів | 2h − 1 (P3-46) | **2h + 1** (h=2 → 5 вузлів) |
-| full BT: макс. висота | (n+1)/2 (P3-47) | **(n−1)/2** (власний приклад конспекту n=5 має h=2) |
-| complete BT: висота | log₂(n+1) − 1 (P4-01) | **⌊log₂ n⌋** |
+| max. nodes in a binary tree | 2^(h+1) − 1 | 2^(h+1) − 1 ✓ |
+| min. height for n nodes | log₂(n+1) − 1 (P3-44) | **⌈log₂(n+1)⌉ − 1**: for n=4 the notes' formula gives 1.32, but height is an integer (2) |
+| full BT: min. nodes | 2h − 1 (P3-46) | **2h + 1** (h=2 → 5 nodes) |
+| full BT: max. height | (n+1)/2 (P3-47) | **(n−1)/2** (the notes' own example n=5 has h=2) |
+| complete BT: height | log₂(n+1) − 1 (P4-01) | **⌊log₂ n⌋** |
 
-У коді (`tree_height`) висота рахується в **рівнях** (порожнє = 0, лист = 1). Це вказано в `dsa_tree.h`.
+In the code (`tree_height`) height is counted in **levels** (empty = 0, leaf = 1). This is stated in `dsa_tree.h`.
 
 ## BST
 
-Означення конспекту (P4-07) містить лише праву частину («similarly … right subtree»), ліва пропущена.
-Повне: для **кожного** вузла x усі ключі лівого піддерева < x.key < усі ключі правого піддерева.
+The notes' definition (P4-07) contains only the right half ("similarly … right subtree"); the left half is missing.
+Complete: for **every** node x, all keys in the left subtree < x.key < all keys in the right subtree.
 
-**Пастка:** перевірка «лівий син < батько < правий син» для кожного вузла **недостатня**. Контрприклад
+**Trap:** checking "left child < parent < right child" at every node is **not sufficient**. Counterexample
 (`test_bst_validity_trap`):
 
 ```
@@ -40,15 +40,15 @@
      /  \
     5    15
         /
-       6        ← 6 < 15 (локально OK), але 6 < 10 у ПРАВОМУ піддереві 10 → не BST
+       6        ← 6 < 15 (locally OK), but 6 < 10 in the RIGHT subtree of 10 → not a BST
 ```
 
-`bst_is_valid` перевіряє діапазон (lo, hi), що передається вниз.
+`bst_is_valid` checks a range (lo, hi) passed down the tree.
 
-### Приклад конспекту перевірено автоматично
+### The notes' example verified automatically
 
-Вставка 43, 10, 79, 90, 12, 54, 11, 9, 50 (notebook p.56). Дерево конспекту правильне; тест
-`test_bst_from_notes` перевіряє всі чотири обходи:
+Inserting 43, 10, 79, 90, 12, 54, 11, 9, 50 (notebook p.56). The notes' tree is correct; the test
+`test_bst_from_notes` checks all four traversals:
 
 ```
             43
@@ -60,76 +60,76 @@
         11   50
 
 preorder:  43 10 9 12 11 79 54 50 90
-inorder:   9 10 11 12 43 50 54 79 90     ← завжди відсортований для BST
+inorder:   9 10 11 12 43 50 54 79 90     ← always sorted for a BST
 postorder: 9 11 12 10 50 54 90 79 43
 level:     43 10 79 9 12 54 90 11 50
 ```
 
-Конспект: «three types of traversals» (P4-06) — пропущено **level-order** (обхід у ширину, через чергу).
+The notes: "three types of traversals" (P4-06) — **level-order** (breadth-first, via a queue) is missing.
 
-### Видалення — 3 випадки (`bst_delete`)
+### Deletion — 3 cases (`bst_delete`)
 
-0 дітей → просто видалити; 1 дитина → замінити дитиною; 2 дитини → скопіювати ключ in-order наступника
-(мінімум правого піддерева) і видалити його. Тест: видалення 43 (корінь, 2 дитини) робить коренем 50.
+0 children → just delete; 1 child → replace with the child; 2 children → copy the key of the in-order successor
+(the minimum of the right subtree) and delete that node. Test: deleting 43 (the root, 2 children) makes 50 the root.
 
 ## AVL
 
-Balance factor bf = h(left) − h(right) ∈ {−1, 0, 1} для **кожного** вузла. Конспект на p.54 обґрунтовує
-збалансованість різницею в корені (P4-04); перевіряти треба всі вузли. На p.58 у прикладі для вузла 50
-написано «1−2=1» без мінуса (P4-NEW-1).
+Balance factor bf = h(left) − h(right) ∈ {−1, 0, 1} for **every** node. On p.54 the notes justify
+balance by the difference at the root (P4-04); all nodes must be checked. On p.58, the example for node 50
+says "1−2=1" without the minus sign (P4-NEW-1).
 
-| Випадок | Вставка в… | Виправлення | Поворотів (тест) |
+| Case | Insertion into… | Fix | Rotations (test) |
 |---|---|---|---|
-| LL | ліве піддерево лівого сина | правий поворот | 1 |
-| RR | праве піддерево правого сина | лівий поворот | 1 |
-| LR | праве піддерево лівого сина | лівий + правий | 2 |
-| RL | ліве піддерево правого сина | правий + лівий | 2 |
+| LL | left subtree of the left child | right rotation | 1 |
+| RR | right subtree of the right child | left rotation | 1 |
+| LR | right subtree of the left child | left + right | 2 |
+| RL | left subtree of the right child | right + left | 2 |
 
-Висота AVL **не** дорівнює log n (P4-09). Межа Адельсона-Вельського–Ландіса / Кнута (TAOCP т.3, §6.2.3):
+AVL height is **not** equal to log n (P4-09). The Adelson-Velsky–Landis / Knuth bound (TAOCP vol. 3, §6.2.3):
 h < 1.4405·log₂(n+2) − 0.3277.
 
-### Експеримент: BST vs AVL
+### Experiment: BST vs AVL
 
 ![bst_avl](../charts/bst_avl.png)
 
 `results/bst_avl.csv`:
 
-| n | вхід | BST висота | AVL висота | log₂(n+1) | BST нс/пошук | AVL нс/пошук |
+| n | input | BST height | AVL height | log₂(n+1) | BST ns/search | AVL ns/search |
 |---|---|---|---|---|---|---|
-| 1 024 | випадковий | 26 | 12 | 10.0 | 30.6 | 18.2 |
-| 1 024 | відсортований | **1 024** | 11 | 10.0 | **1 107.1** | 5.5 |
-| 32 768 | відсортований | **32 768** | 16 | 15.0 | **41 092.2** | 27.3 |
-| 1 048 576 | випадковий | 51 | 24 | 20.0 | 189.8 | 85.4 |
+| 1 024 | random | 26 | 12 | 10.0 | 30.6 | 18.2 |
+| 1 024 | sorted | **1 024** | 11 | 10.0 | **1 107.1** | 5.5 |
+| 32 768 | sorted | **32 768** | 16 | 15.0 | **41 092.2** | 27.3 |
+| 1 048 576 | random | 51 | 24 | 20.0 | 189.8 | 85.4 |
 
-- Відсортований вхід перетворює BST на список: висота = n, пошук Θ(n) — у 1 503 рази повільніше за AVL при n = 32 768.
-- Середня глибина вузла у випадковому BST при n = 2²⁰: виміряно **24.19**. Точна формула очікуваної
-  середньої глибини 2(1+1/n)·Hₙ − 4 = **24.88** (Hₙ — гармонічне число). Розбіжність 3 % на одній реалізації.
-- AVL робить у середньому 0.70 поворотів на вставку (випадковий вхід) і 1.00 (відсортований).
-- AVL на відсортованому вході **швидший** за AVL на випадковому (5.5 vs 18.2 нс при n=1024): ключі запитів
-  йдуть із кроком 7919 по відсортованому масиву, і шляхи пошуку частково збігаються — краща локальність кешу.
+- Sorted input turns a BST into a list: height = n, search is Θ(n) — 1 503 times slower than AVL at n = 32 768.
+- Average node depth in a random BST at n = 2²⁰: measured **24.19**. The exact formula for the expected
+  average depth 2(1+1/n)·Hₙ − 4 = **24.88** (Hₙ is the harmonic number). A 3 % discrepancy on a single instance.
+- AVL performs on average 0.70 rotations per insertion (random input) and 1.00 (sorted input).
+- AVL on sorted input is **faster** than AVL on random input (5.5 vs 18.2 ns at n=1024): the query keys
+  are taken with stride 7919 from the sorted array, and search paths partially overlap — better cache locality.
 
-## B-дерево і B+-дерево
+## B-tree and B+-tree
 
-- Кожен вузол, крім кореня, має **⌈m/2⌉..m** дітей. Конспект пише «m/2» без стелі (P4-11) і «root must have at least 2 *nodes*» (P4-12);
-  правильно: корінь, якщо він не лист, має щонайменше 2 **дітей**.
-- Приклад пошуку 49 у дереві з коренем 78 (P4-13) посилається на дерево, **якого ніде не намальовано**.
-  Єдине B-дерево в конспекті (p.60) має корінь 60 і не містить ні 49, ні 78.
-- Пошук O(log n) для фіксованого m — **правильно** (кандидата в помилки відхилено, CLRS §18.2: O(t·log_t n)).
+- Every node except the root has **⌈m/2⌉..m** children. The notes say "m/2" without the ceiling (P4-11) and "root must have at least 2 *nodes*" (P4-12);
+  correct: the root, if it is not a leaf, has at least 2 **children**.
+- The example of searching for 49 in a tree with root 78 (P4-13) refers to a tree that **is never drawn**.
+  The only B-tree in the notes (p.60) has root 60 and contains neither 49 nor 78.
+- O(log n) search for fixed m is **correct** (error candidate rejected, CLRS §18.2: O(t·log_t n)).
 
-## Бінарна купа
+## Binary heap
 
-Конспект: «A heap is a complete binary tree» (P5-32). Бракує головного: **властивості купи**
-(у max-купі ключ батька ≥ ключів дітей). Масив з 0-індексацією: батько (i−1)/2, діти 2i+1, 2i+2.
+The notes: "A heap is a complete binary tree" (P5-32). The key part is missing: the **heap property**
+(in a max-heap a parent's key ≥ its children's keys). Array with 0-based indexing: parent (i−1)/2, children 2i+1, 2i+2.
 
-### Експеримент: побудова купи за Θ(n), а не Θ(n log n)
+### Experiment: building a heap in Θ(n), not Θ(n log n)
 
 ![heap_build](../charts/heap_build.png)
 
-| n = 2²⁴ | Флойд (`heap_build`) | n × `heap_push` |
+| n = 2²⁴ | Floyd (`heap_build`) | n × `heap_push` |
 |---|---|---|
-| випадковий вхід | 2.56 нс/елем | 7.09 нс/елем |
-| спадний вхід (worst для push у min-купу) | 1.00 нс/елем | 7.23 нс/елем |
+| random input | 2.56 ns/elem | 7.09 ns/elem |
+| descending input (worst case for push into a min-heap) | 1.00 ns/elem | 7.23 ns/elem |
 
-Чому Флойд лінійний: sift-down з вузла на висоті k коштує O(k), а вузлів на висоті k ≈ n/2^(k+1);
-Σ k·n/2^(k+1) = n·Σ k/2^(k+1) = n. Тут «спадний» вхід для min-купи найгірший для push (кожен новий
-елемент спливає до кореня), а для Флойда — ні.
+Why Floyd is linear: sift-down from a node at height k costs O(k), and there are ≈ n/2^(k+1) nodes at height k;
+Σ k·n/2^(k+1) = n·Σ k/2^(k+1) = n. Here, descending input is the worst case for push into a min-heap (every new
+element bubbles up to the root), but not for Floyd.

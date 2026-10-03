@@ -9,8 +9,8 @@ dsa_stats g_stats;
 
 uint64_t dsa_now_ns(void) {
 #ifdef __APPLE__
-    /* На macOS CLOCK_MONOTONIC має роздільність лише 1 мкс (виміряно: усі інтервали кратні 1000 нс).
-     * CLOCK_UPTIME_RAW читає апаратний лічильник (24 МГц на Apple Silicon, тік ~41.7 нс). */
+    /* On macOS CLOCK_MONOTONIC has only 1 us resolution (measured: every interval is a multiple of 1000 ns).
+     * CLOCK_UPTIME_RAW reads the hardware counter (24 MHz on Apple Silicon, tick ~41.7 ns). */
     return clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 #else
     struct timespec ts;
@@ -35,7 +35,7 @@ void dsa_fill(int *a, size_t n, dsa_input_kind kind, dsa_rng *r) {
         break;
     case IN_NEARLY_SORTED:
         for (size_t i = 0; i < n; i++) a[i] = (int)i;
-        /* ~1% випадкових обмінів */
+        /* ~1% random swaps */
         for (size_t k = 0; k < n / 100 + 1 && n > 1; k++) {
             size_t i = (size_t)dsa_rng_below(r, n), j = (size_t)dsa_rng_below(r, n);
             int t = a[i]; a[i] = a[j]; a[j] = t;

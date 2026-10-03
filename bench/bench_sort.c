@@ -1,11 +1,11 @@
-/* bench_sort — час сортування: алгоритм × тип входу × n.
- * n = 2^8 .. 2^22. Для кожної пари (алгоритм, вхід) n росте, поки один прогін < BUDGET_NS;
- * так квадратичні алгоритми автоматично зупиняються раніше, а не "вішають" бенчмарк.
- * Вихід: results/sort_time.csv */
+/* bench_sort — sorting time: algorithm × input type × n.
+ * n = 2^8 .. 2^22. For each (algorithm, input) pair n grows while one run < BUDGET_NS;
+ * so quadratic algorithms stop earlier automatically instead of "hanging" the benchmark.
+ * Output: results/sort_time.csv */
 #include "bench_util.h"
 #include "dsa_sort.h"
 
-#define BUDGET_NS 400000000ULL /* 0.4 с на один прогін */
+#define BUDGET_NS 400000000ULL /* 0.4 s per run */
 #define MIN_LOG 8
 #define MAX_LOG 22
 
@@ -23,7 +23,7 @@ int main(void) {
                 dsa_rng r;
                 dsa_rng_seed(&r, 12345 + (uint64_t)lg);
                 dsa_fill(ref, n, kinds[kk], &r);
-                /* counting sort з ключами до 2^31 потребує 16 ГБ лічильників — обмежуємо ключі до [0, n) */
+                /* counting sort with keys up to 2^31 needs 16 GB of counters - limit keys to [0, n) */
                 if (e->nonneg_only) for (size_t i = 0; i < n; i++) ref[i] = (int)((unsigned)ref[i] % n);
                 int reps = n <= 4096 ? 15 : n <= 65536 ? 7 : 3;
                 uint64_t t[15];
@@ -40,7 +40,7 @@ int main(void) {
                 fprintf(f, "%s,%s,%zu,%d,%llu,%.3f\n", e->name, dsa_input_name(kinds[kk]), n, reps,
                         (unsigned long long)med, (double)med / (double)n);
                 fflush(f);
-                if (med > BUDGET_NS / 4) break; /* наступний n (×2) для Θ(n^2) буде ×4 — зупиняємось */
+                if (med > BUDGET_NS / 4) break; /* the next n (×2) would be ×4 for Θ(n^2) - stop */
             }
         }
         printf("  %-18s done\n", e->name);

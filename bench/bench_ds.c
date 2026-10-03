@@ -1,9 +1,9 @@
-/* bench_ds — експерименти зі структурами даних (реальні вимірювання на цій машині):
- *  A. масив vs зв'язний список: обхід (послідовні вузли vs перемішані в пам'яті)  -> results/traverse.csv
- *  B. динамічний масив (стек): ріст ×2 vs +K                                      -> results/stack_growth.csv
- *  C. BST без балансування vs AVL: висота, середня глибина, час                   -> results/bst_avl.csv
- *  D. skip list: вплив p на кроки пошуку і пам'ять                                -> results/skiplist.csv
- *  E. побудова купи: Флойд O(n) vs n×push O(n log n)                               -> results/heap_build.csv
+/* bench_ds — data-structure experiments (real measurements on this machine):
+ *  A. array vs linked list: traversal (sequential vs shuffled nodes in memory)  -> results/traverse.csv
+ *  B. dynamic array (stack): growth ×2 vs +K                                    -> results/stack_growth.csv
+ *  C. unbalanced BST vs AVL: height, average depth, time                        -> results/bst_avl.csv
+ *  D. skip list: effect of p on search steps and memory                         -> results/skiplist.csv
+ *  E. heap construction: Floyd O(n) vs n×push O(n log n)                        -> results/heap_build.csv
  */
 #include "bench_util.h"
 #include "dsa_list.h"
@@ -20,7 +20,7 @@ static void bench_traverse(void) {
         size_t n = (size_t)1 << lg;
         int *arr = xmalloc(n * sizeof *arr);
         for (size_t i = 0; i < n; i++) arr[i] = (int)i;
-        /* пул вузлів одним блоком — щоб контролювати розташування */
+        /* node pool in one block - to control the layout */
         sll_node *pool = xmalloc(n * sizeof *pool);
         size_t *perm = xmalloc(n * sizeof *perm);
         for (size_t i = 0; i < n; i++) perm[i] = i;
@@ -28,7 +28,7 @@ static void bench_traverse(void) {
         for (int layout = 0; layout < 3; layout++) {
             sll_node *head = NULL;
             if (layout >= 1) {
-                if (layout == 2) { /* Фішер–Єйтс: вузли зв'язані у випадковому порядку адрес */
+                if (layout == 2) { /* Fisher-Yates: nodes linked in random address order */
                     dsa_rng r;
                     dsa_rng_seed(&r, 3);
                     for (size_t i = n - 1; i > 0; i--) {
@@ -42,8 +42,8 @@ static void bench_traverse(void) {
                 }
                 head = &pool[perm[0]];
             }
-            /* Внутрішній прохід повторюється, доки один вимір не триватиме >= 100 мкс: при тіку
-             * таймера 41.7 нс прохід по 256 int (~40 нс) інакше вимірюється одним тіком (знайдено на рев'ю). */
+            /* The inner pass repeats until one measurement lasts >= 100 us: with a timer tick
+             * of 41.7 ns a pass over 256 ints (~40 ns) would otherwise be measured as one tick (found in review). */
             size_t inner = 1;
             for (;;) {
                 uint64_t t0 = dsa_now_ns();
@@ -64,15 +64,15 @@ static void bench_traverse(void) {
                 for (size_t rep = 0; rep < inner; rep++) {
                     if (layout == 0) for (size_t i = 0; i < n; i++) s += arr[i];
                     else for (sll_node *p = head; p; p = p->next) s += p->data;
-                    /* бар'єр компілятора: пам'ять "могла змінитись", тож суму не можна винести з циклу
-                     * повторів, а сам внутрішній цикл лишається ідентичним одиночному проходу */
+                    /* compiler barrier: memory "may have changed", so the sum cannot be hoisted out of the
+                     * repeat loop, while the inner loop itself stays identical to a single pass */
                     __asm__ volatile("" ::: "memory");
                 }
                 t[k] = dsa_now_ns() - t0;
                 bench_sink += s;
             }
             static const char *names[] = {"array", "list_sequential", "list_shuffled"};
-            /* реальний обсяг: int — 4 Б, вузол sll_node — 16 Б */
+            /* actual footprint: int - 4 B, sll_node - 16 B */
             size_t footprint = n * (layout == 0 ? sizeof(int) : sizeof(sll_node));
             fprintf(f, "%s,%zu,%zu,%.4f\n", names[layout], n, footprint,
                     (double)median_u64(t, (size_t)reps) / ((double)n * (double)inner));
@@ -83,9 +83,9 @@ static void bench_traverse(void) {
 }
 
 /* ------------------------------------------------------------------ B */
-/* Ріст "як у підручнику": новий блок + memcpy + free. realloc на macOS для великих блоків
- * переносить сторінки віртуальної пам'яті без копіювання байтів, тож квадратичне копіювання
- * лінійної стратегії через realloc НЕ видно. Цей варіант показує те, що описує теорія. */
+/* "Textbook" growth: new block + memcpy + free. On macOS, realloc of large blocks
+ * remaps virtual memory pages without copying bytes, so the quadratic copying of the
+ * linear strategy is NOT visible through realloc. This variant shows what the theory describes. */
 typedef struct { int *d; size_t n, cap; size_t copied; } vec_copy;
 
 static int vec_push_copy(vec_copy *v, int x, size_t k) {
@@ -135,15 +135,15 @@ static void bench_growth(void) {
         for (int pol = 0; pol < 3; pol++) {
             static const char *names[] = {"double_x2", "linear_+1024", "linear_+64"};
             static const size_t ks[] = {0, 1024, 64};
-            if ((pol == 2 && lg > 17) || (pol == 1 && lg > 20)) continue; /* Θ(n^2/K) копіювань — обмежуємо час */
+            if ((pol == 2 && lg > 17) || (pol == 1 && lg > 20)) continue; /* Θ(n^2/K) copies - limit the time */
             uint64_t t[3];
             size_t reallocs = 0;
             for (int rep = 0; rep < 3; rep++) {
                 stack s;
                 stack_init(&s);
-                /* Між realloc-ами алокуємо "заважаючий" блок, як у реальній програмі. Обмеження (рев'ю):
-                 * блокерів не більше 64 і malloc блокера потрапляє у виміряний час; на результат це не
-                 * впливає — ex_realloc_inplace показує, що великі блоки дорощуються на місці навіть з блокером. */
+                /* Between reallocs, allocate an "obstructing" block as a real program would. Limitations (review):
+                 * at most 64 blockers, and the blocker malloc is included in the measured time; this does not
+                 * affect the result - ex_realloc_inplace shows large blocks grow in place even with a blocker. */
                 void *noise[64];
                 size_t nn = 0;
                 uint64_t t0 = dsa_now_ns();
@@ -193,7 +193,7 @@ static void bench_bst_avl(void) {
                 }
             }
             for (int tree = 0; tree < 2; tree++) {
-                if (tree == 0 && input == 1 && lg > 15) continue; /* вироджений BST: Θ(n^2) вставка */
+                if (tree == 0 && input == 1 && lg > 15) continue; /* degenerate BST: Θ(n^2) insertion */
                 tnode *root = NULL;
                 g_tree.rotations = 0;
                 uint64_t t0 = dsa_now_ns();
@@ -242,8 +242,8 @@ static void bench_skiplist(void) {
             for (size_t q = 0; q < Qn; q++) hit += skip_contains(&s, keys[dsa_rng_below(&r, n)]);
             uint64_t t = dsa_now_ns() - t0;
             bench_sink += hit;
-            /* Pugh 1990: очікувана вартість пошуку <= L(n)/p + 1/(1-p) + 1, L(n) = log_{1/p} n.
-             * Наш лічильник рахує і горизонтальні кроки, і кроки вниз — те саме, що й оцінка Пью. */
+            /* Pugh 1990: expected search cost <= L(n)/p + 1/(1-p) + 1, L(n) = log_{1/p} n.
+             * Our counter counts both horizontal and downward steps - the same as Pugh's bound. */
             double L = log((double)s.size) / log(1.0 / ps[pi]);
             double theory = L / ps[pi] + 1.0 / (1.0 - ps[pi]) + 1.0;
             fprintf(f, "%.4f,%zu,%.3f,%.4f,%.2f,%.3f\n", ps[pi], s.size, (double)s.steps / (double)Qn,
@@ -263,7 +263,7 @@ static void bench_heap(void) {
         int *src = xmalloc(n * sizeof *src);
         dsa_rng r;
         dsa_rng_seed(&r, 9);
-        /* спадний вхід — worst case для push (кожен елемент спливає до кореня) */
+        /* descending input - worst case for push (every element sifts up to the root) */
         for (int input = 0; input < 2; input++) {
             if (input == 0) for (size_t i = 0; i < n; i++) src[i] = (int)(dsa_rng_next(&r) >> 33);
             else for (size_t i = 0; i < n; i++) src[i] = (int)(n - i);
@@ -289,7 +289,7 @@ static void bench_heap(void) {
 }
 
 int main(int argc, char **argv) {
-    /* без аргументів — усі секції; інакше лише названі: traverse growth bst skiplist heap */
+    /* no arguments - all sections; otherwise only the named ones: traverse growth bst skiplist heap */
     const char *only = argc > 1 ? argv[1] : NULL;
 #define RUN_IF(name, fn) if (!only || strcmp(only, name) == 0) { fn(); puts("  " name " done"); }
     RUN_IF("traverse", bench_traverse)

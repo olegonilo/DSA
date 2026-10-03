@@ -21,7 +21,7 @@ static tnode *tnew(int key) {
 tnode *bst_insert(tnode *root, int key, int *ok) {
     tnode **pp = &root;
     while (*pp) {
-        if (key == (*pp)->key) { if (ok) *ok = 0; return root; } /* дублікати не вставляємо */
+        if (key == (*pp)->key) { if (ok) *ok = 0; return root; } /* duplicates are not inserted */
         pp = key < (*pp)->key ? &(*pp)->left : &(*pp)->right;
     }
     *pp = tnew(key);
@@ -44,7 +44,7 @@ tnode *bst_delete(tnode *root, int key) {
     tnode *d = *pp;
     if (!d) return root;
     if (d->left && d->right) {
-        /* 2 дитини: копіюємо ключ in-order наступника (мінімум правого піддерева) і видаляємо його */
+        /* 2 children: copy the in-order successor's key (minimum of the right subtree) and delete it */
         tnode **sp = &d->right;
         while ((*sp)->left) sp = &(*sp)->left;
         tnode *s = *sp;
@@ -52,14 +52,14 @@ tnode *bst_delete(tnode *root, int key) {
         *sp = s->right;
         free(s);
     } else {
-        *pp = d->left ? d->left : d->right; /* 0 або 1 дитина */
+        *pp = d->left ? d->left : d->right; /* 0 or 1 child */
         free(d);
     }
     return root;
 }
 
 void tree_free(tnode *root) {
-    /* Ітеративно через "розгортання" лівих піддерев — без рекурсії глибини h. */
+    /* Iterative via "unrolling" left subtrees - no recursion of depth h. */
     while (root) {
         if (root->left) {
             tnode *l = root->left;
@@ -133,15 +133,15 @@ size_t tree_levelorder(const tnode *root, int *out, size_t cap) {
 }
 
 size_t tree_inorder_iterative(const tnode *root, int *out, size_t cap) {
-    /* cap обмежує і out, і стек: стек містить лише вузли, ще не записані в out,
-     * тож top + k <= кількість вузлів; зупиняємось, щойно k == cap або стек повний. */
+    /* cap bounds both out and the stack: the stack holds only nodes not yet written to out,
+     * so top + k <= node count; stop as soon as k == cap or the stack is full. */
     const tnode **st = malloc((cap ? cap : 1) * sizeof *st);
     if (!st) return 0;
     size_t top = 0, k = 0;
     const tnode *cur = root;
     while ((cur || top) && k < cap) {
         while (cur) {
-            if (top == cap) { free(st); return k; } /* дерево глибше за cap */
+            if (top == cap) { free(st); return k; } /* tree is deeper than cap */
             st[top++] = cur;
             cur = cur->left;
         }
@@ -179,11 +179,11 @@ static tnode *rot_left(tnode *x) {
 static tnode *rebalance(tnode *n) {
     upd(n);
     int b = bf(n);
-    if (b > 1) {                                    /* ліве важче */
+    if (b > 1) {                                    /* left-heavy */
         if (bf(n->left) < 0) n->left = rot_left(n->left);   /* LR */
         return rot_right(n);                        /* LL */
     }
-    if (b < -1) {                                   /* праве важче */
+    if (b < -1) {                                   /* right-heavy */
         if (bf(n->right) > 0) n->right = rot_right(n->right); /* RL */
         return rot_left(n);                         /* RR */
     }
@@ -237,7 +237,7 @@ void heap_free(minheap *hp) { free(hp->a); hp->a = NULL; hp->n = hp->cap = 0; }
 static void sift_up(int *a, size_t i) {
     int v = a[i];
     while (i > 0) {
-        size_t p = (i - 1) / 2;   /* 0-індексація: батько (i-1)/2, діти 2i+1, 2i+2 */
+        size_t p = (i - 1) / 2;   /* 0-based: parent (i-1)/2, children 2i+1, 2i+2 */
         if (a[p] <= v) break;
         a[i] = a[p];
         i = p;

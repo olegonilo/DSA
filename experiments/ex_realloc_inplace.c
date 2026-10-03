@@ -1,10 +1,10 @@
-/* Чому на графіку stack_growth лінійний ріст через realloc() НЕ дає квадратичного часу?
- * Перевірка: чи змінюється адреса блоку після realloc і скільки це коштує порівняно з
- * "підручниковим" malloc(нового) + memcpy. Між блоком і realloc алокуємо блокер.
- * Результат на macOS (виміряно): великі блоки розширюються НА МІСЦІ (адреса та сама) за мікросекунди —
- * аллокатор виділяє великі блоки окремими регіонами віртуальної пам'яті і просто дорощує регіон.
- * Висновок: асимптотика "Θ(n²) копіювань при рості +K" — властивість моделі, а не закон природи;
- * реальна вартість залежить від аллокатора. Подвоєння (×2) — правильна стратегія в будь-якому разі. */
+/* Why does linear growth via realloc() NOT produce quadratic time on the stack_growth chart?
+ * Check: whether the block address changes after realloc, and how much it costs compared with
+ * the "textbook" malloc(new) + memcpy. A blocker is allocated between the block and the realloc.
+ * Result on macOS (measured): large blocks are extended IN PLACE (same address) in microseconds —
+ * the allocator places large blocks in separate virtual-memory regions and simply grows the region.
+ * Conclusion: the asymptotics "Θ(n²) copies with +K growth" is a property of the model, not a law of nature;
+ * the real cost depends on the allocator. Doubling (×2) is the right strategy in any case. */
 #include "dsa_common.h"
 
 #include <stdio.h>
@@ -12,14 +12,14 @@
 #include <string.h>
 
 int main(void) {
-    printf("%8s  %-10s %14s %26s\n", "розмір", "realloc", "час realloc", "malloc+memcpy того ж розміру");
+    printf("%8s  %-10s %14s %26s\n", "size", "realloc", "realloc time", "malloc+memcpy of same size");
     for (size_t mb = 1; mb <= 256; mb *= 4) {
         size_t sz = mb << 20;
         char *p = malloc(sz);
         void *blocker = malloc(64);
         if (!p || !blocker) return 1;
         memset(p, 1, sz);
-        uintptr_t old = (uintptr_t)p; /* порівнюємо як число: використання p після realloc — UB */
+        uintptr_t old = (uintptr_t)p; /* compare as a number: using p after realloc is UB */
         uint64_t t0 = dsa_now_ns();
         char *q = realloc(p, sz + ((size_t)1 << 20));
         uint64_t t1 = dsa_now_ns();
@@ -31,10 +31,10 @@ int main(void) {
         uint64_t t3 = dsa_now_ns();
         volatile char sink = r[sz / 2];
         (void)sink;
-        printf("%5zu МБ  %-10s %11.1f мкс %23.1f мкс\n", mb, (uintptr_t)q == old ? "на місці" : "ПЕРЕНЕСЕНО",
+        printf("%5zu MB  %-10s %11.1f us %23.1f us\n", mb, (uintptr_t)q == old ? "in place" : "MOVED",
                (double)(t1 - t0) / 1e3, (double)(t3 - t2) / 1e3);
         free(q); free(r); free(blocker);
     }
-    puts("(memcpy включає перший дотик до сторінок нового блоку — page faults; це і є реальна ціна копії)");
+    puts("(memcpy includes the first touch of the new block's pages — page faults; that is the real cost of a copy)");
     return 0;
 }

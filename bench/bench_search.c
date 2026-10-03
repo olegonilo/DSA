@@ -1,18 +1,18 @@
-/* bench_search — час одного пошуку (нс) залежно від n, включно з n, що не влазять у кеш.
- * Порівнюємо:
- *   linear        — O(n), але послідовний доступ і SIMD-векторизація;
- *   binary        — класичний O(log n) з розгалуженнями (mispredict ~50% на кожному кроці);
- *   branchless    — той самий O(log n), але без розгалужень (csel/cmov);
- *   eytzinger     — "покращення структури даних": масив у порядку BFS-обходу дерева + prefetch.
- *                   Та сама асимптотика, але кращі кеш-промахи — див. Khuong & Morin, 2017;
- *   interpolation — O(log log n) на рівномірних даних.
- * Вихід: results/search_time.csv */
+/* bench_search — time per search (ns) vs n, including n that do not fit in cache.
+ * Compared:
+ *   linear        — O(n), but sequential access and SIMD vectorization;
+ *   binary        — classic O(log n) with branches (~50% mispredicts at every step);
+ *   branchless    — the same O(log n), but branch-free (csel/cmov);
+ *   eytzinger     — "improving the data structure": array in tree BFS order + prefetch.
+ *                   Same asymptotics, but better cache-miss behavior - see Khuong & Morin, 2017;
+ *   interpolation — O(log log n) on uniform data.
+ * Output: results/search_time.csv */
 #include "bench_util.h"
 #include "dsa_search.h"
 
 #define Q (1 << 20)
 
-/* Eytzinger: b[1..n] — неявне дерево (діти k: 2k, 2k+1), заповнене in-order-обходом із a[]. */
+/* Eytzinger: b[1..n] - implicit tree (children of k: 2k, 2k+1), filled by an in-order traversal of a[]. */
 static size_t eytz_build(const int *a, int *b, size_t i, size_t k, size_t n) {
     if (k <= n) {
         i = eytz_build(a, b, i, 2 * k, n);
@@ -25,21 +25,21 @@ static size_t eytz_build(const int *a, int *b, size_t i, size_t k, size_t n) {
 static size_t eytz_search(const int *b, size_t n, int key) {
     size_t k = 1;
     while (k <= n) {
-        /* k*16: префетч на 4 рівні вперед (16 int = 64 Б — кеш-лінія x86; на Apple M4 hw.cachelinesize = 128). Індекс обмежуємо n:
-         * (1) арифметика вказівника за межі масиву — UB (C11 6.5.6p8);
-         * (2) префетч на ще не відображені сторінки спричиняє дорогі page walk-и (виміряно: 38 нс
-         *     замість ~6 нс при n=1024 у першій версії цього бенчмарку). */
+        /* k*16: prefetch 4 levels ahead (16 int = 64 B - an x86 cache line; on Apple M4 hw.cachelinesize = 128). The index is clamped to n:
+         * (1) pointer arithmetic past the array is UB (C11 6.5.6p8);
+         * (2) prefetching not-yet-mapped pages causes expensive page walks (measured: 38 ns
+         *     instead of ~6 ns at n=1024 in the first version of this benchmark). */
         size_t pf = k * 16;
         pf = pf <= n ? pf : n;
         __builtin_prefetch(b + pf);
         k = 2 * k + (size_t)(b[k] < key);
     }
-    k >>= __builtin_ffsll((long long)~k); /* відкидаємо праві повороти: знаходимо lower_bound */
-    return k;                             /* 0 = не знайдено (key > max) */
+    k >>= __builtin_ffsll((long long)~k); /* drop the right turns: yields lower_bound */
+    return k;                             /* 0 = not found (key > max) */
 }
 
-/* Перша (наївна) версія: префетч без обмеження. Адреса через uintptr_t — без UB у C,
- * але апаратно префетч іде на сторінки за межами масиву. Лишаємо для відтворення ефекту. */
+/* First (naive) version: unclamped prefetch. Address via uintptr_t - no UB in C,
+ * but the hardware prefetch touches pages beyond the array. Kept to reproduce the effect. */
 static size_t eytz_search_unclamped(const int *b, size_t n, int key) {
     size_t k = 1;
     while (k <= n) {
@@ -62,17 +62,17 @@ int main(void) {
     int *a = xmalloc(maxn * sizeof *a), *b = xmalloc((maxn + 1) * sizeof *b);
     int *keys = xmalloc(Q * sizeof *keys);
     for (int lg = 4; lg <= MAXLG; lg++) {
-        /* також проміжні точки 1.5*2^k для гладшої кривої */
+        /* also intermediate points 1.5*2^k for a smoother curve */
         for (int half = 0; half < 2; half++) {
             size_t n = ((size_t)1 << lg) + (half ? ((size_t)1 << lg) / 2 : 0);
             if (n > maxn) break;
-            /* Відсортовані рівномірно-випадкові ключі. (Перша версія мала a[i] = 2i — арифметичну
-             * прогресію, на якій інтерполяція завжди влучає з першої проби; це завищувало її результат.) */
+            /* Sorted uniformly random keys. (The first version used a[i] = 2i - an arithmetic
+             * progression on which interpolation always hits on the first probe; this inflated its result.) */
             dsa_rng r;
             dsa_rng_seed(&r, (uint64_t)n);
             for (size_t i = 0; i < n; i++) a[i] = (int)(dsa_rng_next(&r) >> 33);
             qsort(a, n, sizeof *a, cmp_int_asc);
-            for (int q = 0; q < Q; q++) keys[q] = a[dsa_rng_below(&r, n)]; /* всі успішні */
+            for (int q = 0; q < Q; q++) keys[q] = a[dsa_rng_below(&r, n)]; /* all successful */
             eytz_build(a, b, 0, 1, n);
 
             const char *names[] = {"linear", "binary", "branchless", "eytzinger", "interpolation", "eytzinger_unclamped"};
@@ -100,7 +100,7 @@ int main(void) {
                 double ns = (double)median_u64(t, 5) / q_used;
                 fprintf(f, "%s,%zu,%zu,%.3f\n", names[alg], n, n * sizeof(int), ns);
             }
-            /* перевірка коректності eytzinger на вибірці */
+            /* eytzinger correctness check on a sample */
             for (int q = 0; q < 1000; q++) {
                 size_t k = eytz_search(b, n, keys[q]);
                 if (k == 0 || b[k] != keys[q]) { fprintf(stderr, "eytzinger BUG n=%zu\n", n); return 1; }

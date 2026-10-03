@@ -11,7 +11,7 @@ static uint64_t xs(uint64_t *s) {
 
 static int random_level(skiplist *s) {
     int lvl = 1;
-    /* (x >> 11) * 2^-53 — рівномірне double у [0,1) */
+    /* (x >> 11) * 2^-53 - uniform double in [0,1) */
     while (lvl < SKIP_MAX_LEVEL && (double)(xs(&s->rng) >> 11) * 0x1.0p-53 < s->p) lvl++;
     return lvl;
 }
@@ -43,12 +43,12 @@ void skip_free(skiplist *s) {
     s->head = NULL;
 }
 
-/* Спуск: на кожному рівні йдемо вправо, поки наступний ключ < key. */
+/* Descent: on each level move right while the next key < key. */
 static skip_node *descend(skiplist *s, int key, skip_node **update) {
     skip_node *x = s->head;
     for (int i = s->level - 1; i >= 0; i--) {
         while (x->next[i] && x->next[i]->key < key) { x = x->next[i]; s->steps++; }
-        s->steps++; /* крок вниз */
+        s->steps++; /* step down */
         if (update) update[i] = x;
     }
     return x->next[0];

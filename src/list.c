@@ -9,7 +9,7 @@ void sll_init(sll *l) { l->head = l->tail = NULL; l->size = 0; }
 void sll_free(sll *l) {
     sll_node *p = l->head;
     while (p) {
-        sll_node *nx = p->next; /* зберегти next ДО free — інакше use-after-free */
+        sll_node *nx = p->next; /* save next BEFORE free - otherwise use-after-free */
         free(p);
         p = nx;
     }
@@ -65,7 +65,7 @@ int sll_pop_front(sll *l, int *out) {
 }
 
 int sll_remove_value(sll *l, int v) {
-    /* Вказівник на вказівник: однаковий код для голови і для середини списку. */
+    /* Pointer to pointer: the same code for the head and for the middle of the list. */
     sll_node **pp = &l->head, *prev = NULL;
     while (*pp && (*pp)->data != v) { prev = *pp; pp = &(*pp)->next; }
     if (!*pp) return -1;
@@ -108,7 +108,7 @@ int sll_has_cycle(const sll_node *head) {
 sll_node *sll_middle(const sll *l) {
     sll_node *slow = l->head, *fast = l->head;
     while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
-    return slow; /* для парного n — другий з двох середніх */
+    return slow; /* for even n - the second of the two middles */
 }
 
 /* ================================================================ doubly */
@@ -194,7 +194,7 @@ int josephus_cll(int n, int k) {
         if (cll_push_back(&c, i) != 0) { cll_free(&c); return -1; }
     sll_node *prev = c.tail;
     while (c.size > 1) {
-        /* k mod size: кроки по колу довжини size періодичні — O(min(k, size)) замість O(k) */
+        /* k mod size: steps around a circle of length size are periodic - O(min(k, size)) instead of O(k) */
         size_t steps = (size_t)(k - 1) % c.size;
         for (size_t s = 0; s < steps; s++) prev = prev->next;
         sll_node *dead = prev->next;

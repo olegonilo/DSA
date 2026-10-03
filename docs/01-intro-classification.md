@@ -1,67 +1,67 @@
-# 01. Структури даних: визначення і класифікація
+# 01. Data structures: definition and classification
 
-Конспект: notebook p.3–8 (PDF p.4–9). Транскрипт: [`transcript/part-01.md`](../transcript/part-01.md).
-Помилки розділу: [`errata/ERRATA-full.md` → розділ 01](../errata/ERRATA-full.md).
+Notes: notebook p.3–8 (PDF p.4–9). Transcript: [`transcript/part-01.md`](../transcript/part-01.md).
+Errors in this chapter: [`errata/ERRATA-full.md` → chapter 01](../errata/ERRATA-full.md).
 
-## Коротко і правильно
+## Short and correct
 
-**Структура даних** — це спосіб організації даних у пам'яті *разом з операціями* над ними та
-гарантіями їхньої вартості. Конспект (P1-01) називає її «набором алгоритмів», і це неправильно:
-алгоритм *використовує* структуру, але не є нею.
+A **data structure** is a way of organizing data in memory *together with the operations* on it and
+guarantees about their cost. The notes (P1-01) call it "a set of algorithms", and that is wrong:
+an algorithm *uses* a structure but is not one.
 
-**Абстрактний тип даних (ADT)** — це *специфікація*: множина значень і операцій без опису реалізації
-(«що»). Структура даних — *реалізація* ADT («як»). Приклад: ADT «стек» (push/pop/peek, LIFO) реалізується
-масивом (`src/stack_queue.c: stack`) або списком. Конспект на p.4 (P1-06) називає ADT «алгоритмами»,
-хоча сам на p.5 правильно пише «ADT tells what».
+An **abstract data type (ADT)** is a *specification*: a set of values and operations without describing the implementation
+("what"). A data structure is an *implementation* of an ADT ("how"). Example: the "stack" ADT (push/pop/peek, LIFO) is implemented
+with an array (`src/stack_queue.c: stack`) or a list. On p.4 (P1-06) the notes call ADTs "algorithms",
+even though on p.5 they correctly write "ADT tells what".
 
 ```mermaid
 graph TD
-    DS[Дані в програмі] --> P["Примітивні ТИПИ<br/>int, char, float, double, pointer"]
-    DS --> NP[Непримітивні СТРУКТУРИ]
-    NP --> L["Лінійні<br/>(кожен внутрішній елемент має 1 попередника і 1 наступника)"]
-    NP --> NL["Нелінійні<br/>(ієрархія або мережа)"]
-    L --> A[Масив] & LL[Зв'язний список] & S[Стек] & Q[Черга]
-    NL --> T[Дерево] & G[Граф]
+    DS[Data in a program] --> P["Primitive TYPES<br/>int, char, float, double, pointer"]
+    DS --> NP[Non-primitive STRUCTURES]
+    NP --> L["Linear<br/>(each inner element has 1 predecessor and 1 successor)"]
+    NP --> NL["Non-linear<br/>(hierarchy or network)"]
+    L --> A[Array] & LL[Linked list] & S[Stack] & Q[Queue]
+    NL --> T[Tree] & G[Graph]
 ```
 
-> Конспект каже «primitive data structure» (P1-02). Точніше — *примітивні типи даних*; структури
-> починаються там, де є організація кількох значень.
+> The notes say "primitive data structure" (P1-02). More precisely — *primitive data types*; structures
+> begin where several values are organized together.
 
-### Лінійна vs нелінійна — точний критерій
+### Linear vs non-linear — the exact criterion
 
-| | Лінійна | Нелінійна |
+| | Linear | Non-linear |
 |---|---|---|
-| Критерій | елементи утворюють **одну послідовність**: кожен, крім крайніх, має рівно 1 попередника і 1 наступника | елемент може мати **кілька** попередників/наступників |
-| Конспект | «connected to only one another element» (P1-03, неточно: внутрішній елемент має *двох* сусідів) | «arranged in a random manner» (P1-05, неточно: вони впорядковані *ієрархічно* або *мережею*, а не випадково) |
-| Обхід | один прохід від першого до останнього | потрібна стратегія: DFS/BFS |
+| Criterion | elements form **a single sequence**: each one except the ends has exactly 1 predecessor and 1 successor | an element can have **several** predecessors/successors |
+| The notes | "connected to only one another element" (P1-03, imprecise: an inner element has *two* neighbors) | "arranged in a random manner" (P1-05, imprecise: they are ordered *hierarchically* or *as a network*, not randomly) |
+| Traversal | one pass from first to last | needs a strategy: DFS/BFS |
 
-Важливо: **лінійність — властивість логічної структури, а не розташування в пам'яті.** Зв'язний список
-лінійний, хоча вузли розкидані по пам'яті (див. помилку P6-36 в інтерв'ю-питанні Q10).
+Important: **linearity is a property of the logical structure, not of the memory layout.** A linked list
+is linear even though its nodes are scattered across memory (see error P6-36 in interview question Q10).
 
-### Статичні vs динамічні
+### Static vs dynamic
 
-Конспект відносить стек і чергу до динамічних (P1-11). Це залежить від реалізації: стек на
-фіксованому масиві (`int stack[8]`, як у coding question 3) — статичний; на динамічному масиві
-(`stack_push` з подвоєнням) або списку — динамічний.
+The notes classify stack and queue as dynamic (P1-11). It depends on the implementation: a stack on a
+fixed array (`int stack[8]`, as in coding question 3) is static; on a dynamic array
+(`stack_push` with doubling) or a list it is dynamic.
 
-## Операції та їхні межі
+## Operations and their limits
 
-| Операція | Що каже конспект | Як правильно |
+| Operation | What the notes say | Correct version |
 |---|---|---|
-| Insertion | «size n ⇒ можна вставити тільки n−1 елементів» (P1-12, **помилка**) | структура місткості n вміщує **n** елементів; вставка в повну — overflow. Перевірено: `cq_init(&q, 3)` вміщує 3 (тест `test_stack_queue`) |
-| Searching | «два алгоритми: linear і binary» (P1-13) | базових для масиву два, але є ще hashing, interpolation, jump, exponential, BST — 8 реалізовано в `src/search.c` |
-| Merging | «два списки об'єднуються в третій розміру M+N» (P1-14) | у DSA *злиття* = два **відсортовані** списки → один відсортований за Θ(M+N) (`merge()` у `src/sort.c`) |
+| Insertion | "size n ⇒ only n−1 elements can be inserted" (P1-12, **error**) | a structure of capacity n holds **n** elements; inserting into a full one is an overflow. Verified: `cq_init(&q, 3)` holds 3 (test `test_stack_queue`) |
+| Searching | "two algorithms: linear and binary" (P1-13) | there are two basic ones for an array, but there are also hashing, interpolation, jump, exponential, BST — 8 are implemented in `src/search.c` |
+| Merging | "two lists are combined into a third of size M+N" (P1-14) | in DSA *merging* = two **sorted** lists → one sorted list in Θ(M+N) (`merge()` in `src/sort.c`) |
 
-## Помилки в прикладах
+## Errors in the examples
 
-- **«60 employees … 20 records»** (P1-07, p.5): один запис на працівника → 60 записів. Перевірено на 400 dpi.
-- **«inventory size of 106 items»** (P1-N1, p.6): у першоджерелі було 10⁶ — верхній індекс загубився.
-  Аргумент «пошук сповільнюється з ростом даних» безглуздий для 106 елементів:
-  лінійний пошук по 96 int займає 18 нс, по 128 — 21 нс (`results/search_time.csv`, `linear`).
+- **"60 employees … 20 records"** (P1-07, p.5): one record per employee → 60 records. Verified at 400 dpi.
+- **"inventory size of 106 items"** (P1-N1, p.6): the original source had 10⁶ — the superscript got lost.
+  The argument "search slows down as data grows" is meaningless for 106 elements:
+  linear search over 96 ints takes 18 ns, over 128 — 21 ns (`results/search_time.csv`, `linear`).
 
-## Перевір себе
+## Check yourself
 
-1. Чому однозв'язний список — лінійна структура, хоча вузли не лежать поруч у пам'яті?
-2. Назвіть ADT і дві його реалізації з цього репозиторію з різною асимптотикою однієї операції.
-   *(Відповідь: «черга» — `cqueue` (enqueue O(1)) і `lqueue` (enqueue O(1), але місце не перевикористовується —
-   див. `test_stack_queue`, «overflow» при 2 вільних клітинках).)*
+1. Why is a singly linked list a linear structure even though its nodes are not adjacent in memory?
+2. Name an ADT and two of its implementations from this repository with different asymptotics for the same operation.
+   *(Answer: "queue" — `cqueue` (enqueue O(1)) and `lqueue` (enqueue O(1), but space is not reused —
+   see `test_stack_queue`, "overflow" with 2 free cells).)*

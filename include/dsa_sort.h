@@ -1,8 +1,8 @@
 /*
- * dsa_sort.h — алгоритми сортування (розділи 18–19 конспекту).
+ * dsa_sort.h — sorting algorithms (sections 18-19 of the notes).
  *
- * Всі функції сортують масив int за зростанням in-place (окрім зазначених).
- * Якщо зібрано з -DDSA_COUNT, функції рахують g_stats.cmp / swap / move.
+ * All functions sort an int array in ascending order in place (unless noted otherwise).
+ * When built with -DDSA_COUNT, the functions count g_stats.cmp / swap / move.
  */
 #ifndef DSA_SORT_H
 #define DSA_SORT_H
@@ -12,39 +12,39 @@
 typedef void (*dsa_sort_fn)(int *a, size_t n);
 
 /* O(n^2) */
-void sort_bubble_naive(int *a, size_t n);     /* без раннього виходу — як у більшості конспектів */
-void sort_bubble(int *a, size_t n);           /* з прапорцем swapped: best O(n) */
+void sort_bubble_naive(int *a, size_t n);     /* no early exit - as in most lecture notes */
+void sort_bubble(int *a, size_t n);           /* with a swapped flag: best O(n) */
 void sort_selection(int *a, size_t n);
 void sort_insertion(int *a, size_t n);
-void sort_insertion_binary(int *a, size_t n); /* O(n log n) порівнянь, але O(n^2) переміщень */
+void sort_insertion_binary(int *a, size_t n); /* O(n log n) comparisons, but O(n^2) moves */
 
-/* субквадратичні */
-void sort_shell(int *a, size_t n);            /* послідовність Ciura */
+/* subquadratic */
+void sort_shell(int *a, size_t n);            /* Ciura gap sequence */
 void sort_shell_halving(int *a, size_t n);    /* n/2, n/4, ... (Shell, 1959) — worst Θ(n^2) */
 
 /* O(n log n) */
-void sort_merge(int *a, size_t n);            /* top-down, O(n) буфер */
-void sort_merge_buf(int *a, size_t n, int *buf); /* те саме з буфером викликача (>= n int) — без malloc */
+void sort_merge(int *a, size_t n);            /* top-down, O(n) buffer */
+void sort_merge_buf(int *a, size_t n, int *buf); /* same, with a caller-provided buffer (>= n ints) - no malloc */
 void sort_merge_bottomup(int *a, size_t n);
-void sort_quick_lomuto_last(int *a, size_t n);/* опорний = останній: worst Θ(n^2) на відсортованому */
-void sort_quick_hoare_mid(int *a, size_t n);  /* Хоара, опорний = середній */
-void sort_quick_median3(int *a, size_t n);    /* median-of-3 + insertion для малих + рекурсія в меншу частину */
-void sort_quick_3way(int *a, size_t n);       /* Дейкстра (Dutch flag): лінійний на дублікатах */
+void sort_quick_lomuto_last(int *a, size_t n);/* pivot = last: worst Θ(n^2) on sorted input */
+void sort_quick_hoare_mid(int *a, size_t n);  /* Hoare, pivot = middle */
+void sort_quick_median3(int *a, size_t n);    /* median-of-3 + insertion for small + recurse into smaller part */
+void sort_quick_3way(int *a, size_t n);       /* Dijkstra (Dutch flag): linear on duplicates */
 void sort_heap(int *a, size_t n);
 
-/* не порівняльні */
-void sort_counting(int *a, size_t n);         /* для невід'ємних int, O(n + k) */
-void sort_radix_lsd(int *a, size_t n);        /* для невід'ємних int, 4 проходи по 8 біт */
-void sort_bucket(int *a, size_t n);           /* n кошиків по діапазону [min,max] + insertion у кожному; avg O(n) для рівномірних */
+/* non-comparison */
+void sort_counting(int *a, size_t n);         /* for non-negative ints, O(n + k) */
+void sort_radix_lsd(int *a, size_t n);        /* for non-negative ints, 4 passes of 8 bits */
+void sort_bucket(int *a, size_t n);           /* n buckets over [min,max] + insertion in each; avg O(n) for uniform input */
 
-/* обгортка над qsort(3) як еталон */
+/* wrapper around qsort(3) as a baseline */
 void sort_libc_qsort(int *a, size_t n);
 
 typedef struct {
     const char *name;
     dsa_sort_fn fn;
-    int quadratic;   /* 1 якщо worst/avg Θ(n^2) — бенчмарк обмежує n */
-    int nonneg_only; /* 1 якщо приймає тільки невід'ємні ключі */
+    int quadratic;   /* 1 if worst/avg Θ(n^2) - the benchmark limits n */
+    int nonneg_only; /* 1 if it accepts only non-negative keys */
 } dsa_sort_entry;
 
 extern const dsa_sort_entry dsa_sorts[];
